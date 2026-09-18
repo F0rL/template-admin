@@ -1,0 +1,29 @@
+@echo off
+chcp 65001 >nul
+title admin-aijoin 本地启动
+
+cd /d "D:\Project\工蜂\2026\大兴路小学\src\AIJoin\admin-aijoin"
+
+echo ============================================
+echo   admin-aijoin 一键启动
+echo ============================================
+echo.
+
+echo [1/2] 重新构建...
+node node_modules/vite/bin/vite.js build --base=.
+if errorlevel 1 (
+    echo.
+    echo [X] 构建失败！请检查上面的错误信息
+    pause
+    exit /b 1
+)
+
+echo.
+echo [2/2] 启动服务...
+echo.
+echo 访问地址: http://localhost:4000/admin/
+echo 停止服务: 按 Ctrl+C
+echo.
+
+node preview-server.mjs
+pause

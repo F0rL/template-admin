@@ -1,0 +1,44 @@
+# --- IDE ---
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# --- OS ---
+.DS_Store
+Thumbs.db
+
+# --- Temp ---
+tmp/
+temp/
+
+# --- Claude worktrees ---
+.claude/worktrees/
+.claude/settings.json
+
+# --- Node.js (nodejs-fastify) ---
+nodejs-fastify/node_modules/
+nodejs-fastify/npm-debug.log*
+nodejs-fastify/yarn-debug.log*
+nodejs-fastify/yarn-error.log*
+nodejs-fastify/pnpm-debug.log*
+nodejs-fastify/dist/
+nodejs-fastify/build/
+nodejs-fastify/*.tsbuildinfo
+nodejs-fastify/.env
+nodejs-fastify/.env.local
+nodejs-fastify/.env.*.local
+nodejs-fastify/logs/
+nodejs-fastify/*.log
+nodejs-fastify/coverage/
+nodejs-fastify/.nyc_output/
+nodejs-fastify/prisma/migrations/
+!nodejs-fastify/prisma/migrations/.gitkeep
+nodejs-fastify/dump.rdb
+
+# --- Playwright MCP (nodejs-fastify) ---
+nodejs-fastify/.playwright-mcp/
+
+# --- Design docs ---
+nodejs-fastify/docs/superpowers/

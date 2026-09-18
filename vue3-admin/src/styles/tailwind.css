@@ -1,0 +1,75 @@
+@import 'tailwindcss';
+
+/* =============================================
+ * Tailwind v4 Theme Integration
+ * ---------------------------------------------
+ * Maps design tokens from theme.css to Tailwind
+ * utility classes. Using var() (non-inline)
+ * keeps utilities in sync with Element Plus at
+ * runtime and preserves dark-mode switching.
+ *
+ * theme.css is imported in main.ts after the Element Plus
+ * base styles (按需引入) so its :root overrides win the CSS cascade.
+ *
+ * Generated utilities:
+ *   bg-primary, text-primary, border-primary ...
+ *   bg-success, text-warning, bg-danger ...
+ *   bg-bg, text-text-primary, border-border ...
+ * ============================================= */
+@theme {
+  /* Primary */
+  --color-primary: var(--el-color-primary);
+  --color-primary-light-9: var(--el-color-primary-light-9);
+
+  /* Text */
+  --color-text-primary: var(--el-text-color-primary);
+  --color-text-secondary: var(--el-text-color-secondary);
+  --color-text-placeholder: var(--el-text-color-placeholder);
+
+  /* Fill */
+  --color-fill-light: var(--el-fill-color-light);
+
+  /* Border */
+  --color-border-lighter: var(--el-border-color-lighter);
+
+  /* Danger */
+  --color-danger: var(--el-color-danger);
+  --color-danger-light-9: var(--el-color-danger-light-9);
+}
+
+/* =============================================
+ * Custom Utilities
+ * ---------------------------------------------
+ * Reusable utility classes that Tailwind's
+ * default set does not cover.
+ * ============================================= */
+
+/* 页面主体内容高度：视窗高度 - header(3.5rem / h-14) - 内容区 p-4 上下内边距(2rem)。
+   用于需要限制高度、内部独立滚动的布局（如部门树、表格等）。 */
+@utility h-page {
+  height: calc(100vh - 3.5rem - 2rem);
+}
+
+/* 内容块卡片：圆角 + 白色背景 + 内边距 + 轻阴影 */
+@utility panel-card {
+  border-radius: 0.25rem;
+  background-color: #fff;
+  padding: 1.25rem;
+  box-shadow: var(--shadow-sm);
+}
+
+/* 细滚动条：树形/列表滚动区域复用 */
+@utility scroll-thin {
+  &::-webkit-scrollbar {
+    width: 4px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background-color: var(--el-border-color-darker);
+    border-radius: 3px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background-color: transparent;
+  }
+}
