@@ -25,8 +25,8 @@ let isReLogging = false
  * handleNetworkError 见到它直接放行，避免重复 toast。
  */
 export class BusinessError extends Error {
-  /** 后端业务码（HTTP 200 但 success:false 时的 code，如 401 鉴权失效） */
-  code?: number
+  /** 后端业务码（HTTP 200 但 success:false 时的 code，如 401 鉴权失效）；declare 避免类字段降级生成共享 helper，把懒加载 chunk 拖进首屏 */
+  declare code?: number
   constructor(message = '请求失败', code?: number) {
     super(message)
     this.name = 'BusinessError'

@@ -49,35 +49,38 @@ export default defineConfig(({ mode }) => {
       include: ['element-plus', '@vueuse/core', 'dayjs', 'axios', 'nprogress'],
     },
     build: {
-      // 产物兼容目标：平衡体积与现代浏览器兼容性
-      target: 'es2018',
+      // 产物兼容目标：类字段等语法原生支持（Chrome 94+ / Safari 15.4+），避免降级
+      // helper 被分配进懒加载 chunk，产生入口 → 懒 chunk 的静态依赖链
+      target: 'es2022',
       sourcemap: false,
       cssCodeSplit: true,
       reportCompressedSize: true,
-      rollupOptions: {
+      rolldownOptions: {
         output: {
           // 手动分包：稳定缓存 + 避免单 chunk 过大
-          manualChunks(id) {
-            if (!id.includes('node_modules')) return
-            if (id.includes('element-plus') || id.includes('@element-plus') || id.includes('vant'))
-              return 'ui'
-            // vue-echarts 单独分组并放在 echarts 之前，避免被 id.includes('echarts') 误归入
-            // echarts chunk 而引入 vue 依赖，把 echarts 顶到首屏预加载
-            if (id.includes('vue-echarts')) return 'vue-echarts'
-            if (id.includes('echarts') || id.includes('zrender')) return 'echarts'
-            // vue-query 独立缓存：@tanstack 自开发版节奏，与 vue 生态不同步
-            if (id.includes('@tanstack')) return 'vue-query'
-            if (id.includes('axios')) return 'axios'
-            if (id.includes('node-forge') || id.includes('jsencrypt')) return 'crypto'
-            // vue 生态：路径边界精确匹配，避免误吞名称含 vue 的包
-            if (
-              id.includes('@vueuse') ||
-              id.includes('@vue/') ||
-              id.includes('vue-router') ||
-              id.includes('pinia') ||
-              id.includes('/vue/')
-            )
-              return 'vue-vendor'
+          codeSplitting: {
+            // 依赖递归捕获（includeDependenciesRecursively，默认 true）下，
+            // 分组按声明顺序竞争：靠前的分组捕获模块时会一并吞下其未分组的依赖。
+            // vue-vendor 必须排在最前，否则 element-plus（ui）的依赖闭包会先把
+            // vue 运行时吞进 ui chunk（manualChunks 单组模拟时代的实际表现）
+            groups: [
+              // vue 生态：包名边界精确匹配，避免误吞名称含 vue 的包
+              {
+                name: 'vue-vendor',
+                test: /[\\/]node_modules[\\/](@vue|@vueuse|vue|vue-router|pinia(?:-plugin-persistedstate)?)[\\/]/,
+              },
+              // echarts 须在 vue-echarts 之前：vue-echarts 依赖 echarts/core，
+              // 分组靠前者优先捕获，echarts 完整实现（含 zrender）归 echarts，
+              // vue-echarts 保持薄壳仅存包装层，升级互不拉动对方缓存
+              { name: 'echarts', test: /[\\/]node_modules[\\/](echarts|zrender)[\\/]/ },
+              { name: 'vue-echarts', test: /[\\/]node_modules[\\/]vue-echarts[\\/]/ },
+              // element-plus 及其未分组依赖（dayjs 等）整体进入 ui，保证缓存稳定
+              { name: 'ui', test: /[\\/]node_modules[\\/](element-plus|@element-plus|vant)[\\/]/ },
+              // vue-query 独立缓存：@tanstack 自开发版节奏，与 vue 生态不同步
+              { name: 'vue-query', test: /[\\/]node_modules[\\/]@tanstack[\\/]/ },
+              { name: 'axios', test: /[\\/]node_modules[\\/]axios[\\/]/ },
+              { name: 'crypto', test: /[\\/]node_modules[\\/](node-forge|jsencrypt)[\\/]/ },
+            ],
           },
         },
       },

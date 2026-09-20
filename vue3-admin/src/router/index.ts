@@ -8,6 +8,9 @@ import { config } from '@/config'
 import dashboardRoutes from './modules/dashboard'
 import systemRoutes from './modules/system'
 
+// 只保留顶部进度条，不显示右上角的 loading 转圈图标
+NProgress.configure({ showSpinner: false })
+
 declare module 'vue-router' {
   interface RouteMeta {
     title?: string
@@ -39,10 +42,7 @@ export const constantRoutes: RouteRecordRaw[] = [
   },
 ]
 
-export const asyncRoutes: RouteRecordRaw[] = [
-  ...dashboardRoutes,
-  ...systemRoutes,
-]
+export const asyncRoutes: RouteRecordRaw[] = [...dashboardRoutes, ...systemRoutes]
 
 const router = createRouter({
   history: createWebHistory(config.BASE_URL),
