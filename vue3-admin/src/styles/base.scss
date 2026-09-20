@@ -1,0 +1,30 @@
+// =============================================
+// 基础样式（reset）
+// ---------------------------------------------
+// 全局盒模型、根容器尺寸与默认字体。
+// =============================================
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#app {
+  height: 100%;
+  width: 100%;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family:
+    -apple-system, BlinkMacSystemFont, 'Microsoft YaHei', 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB',
+    'Helvetica Neue', Helvetica, Arial, sans-serif;
+}
+
+#app {
+  color: #333;
+}

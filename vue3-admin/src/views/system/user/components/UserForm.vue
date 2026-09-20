@@ -7,13 +7,11 @@ import { roleKeys } from '@/api/system/sysRole'
 import * as sysRoleApi from '@/api/system/sysRole'
 import type { UserPayload } from '@/api/system/sysUser'
 import * as sysUserApi from '@/api/system/sysUser'
-import * as wxWorkApi from '@/api/system/wxWork'
 import * as sysFileApi from '@/api/system/sysFile'
 import { useUserStore } from '@/stores/modules/user'
 import { confirm, message, notify, withLoading } from '@/utils/feedback'
 import { resolveFileUrl } from '@/utils/file'
 import { validateImageFile } from '@/utils/file'
-import ContactSelect from '@/components/ContactSelect/index.vue'
 const emit = defineEmits<{
   success: []
 }>()
@@ -23,7 +21,6 @@ const userStore = useUserStore()
 const visible = ref(false)
 const editingId = ref('')
 const formRef = useTemplateRef('formRef')
-const contactRef = useTemplateRef('contactRef')
 const loading = ref(false)
 const fileList = ref<UploadFile[]>([])
 
@@ -194,20 +191,6 @@ function handleRemove() {
   formModel.avatar = ''
 }
 
-/** 打开企业微信联系人选择并回填账号 */
-async function handleSearchContact() {
-  const picked = await contactRef.value?.open({ selectType: 'user', selectNum: 'min' })
-  if (!picked?.length) return
-  const entity = await wxWorkApi.fetchWorkUserEntity({ userId: picked[0].id })
-  formModel.name = entity.name
-  formModel.userId = entity.userid || entity.mobile || ''
-  formModel.pwd = formModel.userId + '@123'
-  formModel.pwd1 = formModel.userId + '@123'
-  formModel.wechat_UserId = entity.userid
-  formModel.wechat_DepName = entity.departmentNames?.[0] ?? null
-  formModel.wechat_DepId = entity.department?.[0] ? String(entity.department[0]) : null
-}
-
 /** 重置账号密码 */
 async function handleResetPwd() {
   const ok = await confirm('确认重置此账号密码？', '提示')
@@ -240,10 +223,7 @@ defineExpose({ open })
       <div class="mt-4 mb-3 text-base font-bold">基本信息</div>
 
       <el-form-item label="姓名" prop="name">
-        <div class="flex items-center gap-2">
-          <el-input v-model="formModel.name" placeholder="请输入姓名" class="flex-1" />
-          <el-button v-if="!isEdit" @click="handleSearchContact">关联人员</el-button>
-        </div>
+        <el-input v-model="formModel.name" placeholder="请输入姓名" />
       </el-form-item>
 
       <el-form-item label="账号" prop="userId">
@@ -304,7 +284,6 @@ defineExpose({ open })
         />
       </el-form-item>
     </el-form>
-    <ContactSelect ref="contactRef" />
     <template #footer>
       <el-button @click="visible = false">取消</el-button>
       <el-button type="primary" :loading="saveMutation.isPending.value" @click="handleSave"

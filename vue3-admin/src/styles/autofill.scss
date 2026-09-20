@@ -1,0 +1,25 @@
+// =============================================
+// 浏览器自动填充（autofill）背景修正
+// ---------------------------------------------
+// Chrome/Safari/Edge 自动填充时会通过 UA 样式（带 !important）
+// 给输入框强制套上淡蓝/淡黄背景，background-color 无法直接覆盖。
+// 浏览器不管控 box-shadow，故用大面积 inset 阴影按输入框
+// 背景色重绘底色，并固定文字与光标颜色，保持界面一致。
+// =============================================
+
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+textarea:-webkit-autofill,
+textarea:-webkit-autofill:hover,
+textarea:-webkit-autofill:focus,
+select:-webkit-autofill,
+select:-webkit-autofill:hover,
+select:-webkit-autofill:focus {
+  -webkit-box-shadow: 0 0 0 1000px var(--el-input-bg-color, #fff) inset !important;
+  box-shadow: 0 0 0 1000px var(--el-input-bg-color, #fff) inset !important;
+  -webkit-text-fill-color: var(--el-text-color-regular, #606266) !important;
+  caret-color: var(--el-text-color-regular, #606266) !important;
+  background-clip: content-box !important;
+  transition: background-color 5000s ease-in-out 0s;
+}

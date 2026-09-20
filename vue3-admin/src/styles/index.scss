@@ -1,134 +1,20 @@
 // =============================================
-// Global Styles
+// Global Styles — 聚合入口
 // ---------------------------------------------
-// Design tokens (colors, radius, etc.) are
-// defined in src/styles/theme.css as CSS custom
-// properties and are NOT redefined here.
+// 全局样式按主题拆分为独立文件，在此统一引入：
+// - base.scss          基础 reset（盒模型、根容器、字体）
+// - element-plus.scss  Element Plus 组件通用定制
+// - el-tree.scss       el-tree 组件全局美化
+// - autofill.scss      浏览器自动填充背景修正
+//
+// 设计 token 定义在 theme.css，Tailwind 工具类与自定义
+// utility 定义在 tailwind.css，均由 main.ts 直接引入。
+//
+// 新增全局样式时按主题新建文件并在此 @use，
+// 禁止直接堆积在本文件，避免单文件无限膨胀难以维护。
 // =============================================
 
-*,
-*::before,
-*::after {
-  box-sizing: border-box;
-}
-
-html,
-body,
-#app {
-  height: 100%;
-  width: 100%;
-}
-
-body {
-  margin: 0;
-  padding: 0;
-  font-family:
-    -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB',
-    'Microsoft YaHei', 'Helvetica Neue', Helvetica, Arial, sans-serif;
-}
-
-#app {
-  color: #333;
-}
-
-// 筛选表单：栅格布局下去掉 el-form-item 默认底间距，保证容器上下留白一致
-
-.g-filter-form {
-  // display: flex;
-  // flex-direction: column;
-  // gap: 16px;
-
-  .el-form-item {
-    margin-bottom: 0;
-  }
-}
-
-.el-drawer .el-drawer__header {
-  margin-bottom: 0;
-}
-
-// =============================================
-// el-tree 全局美化
-// ---------------------------------------------
-// 统一优化部门/组织树等场景的视觉表现：
-// - hover 浅色填充背景 + 主色文字
-// - 选中节点 (highlight-current) 主色淡背景 + 左侧主色指示条
-// - 节点内容圆角 + 过渡动效
-// - 展开/折叠图标颜色与过渡
-// 颜色取自 Element Plus 设计 token，随主题切换自动同步。
-// =============================================
-
-.el-tree {
-  --el-tree-node-hover-bg-color: var(--el-color-primary-light-9);
-  background-color: transparent;
-
-  .el-tree-node {
-    // 节点内容容器：圆角 + 过渡
-    .el-tree-node__content {
-      height: 32px;
-      padding-right: 8px;
-      border-radius: 6px;
-      transition:
-        background-color 0.2s ease,
-        color 0.2s ease;
-    }
-
-    // hover 态：浅主色背景 + 主色文字
-    .el-tree-node__content:hover {
-      background-color: var(--el-tree-node-hover-bg-color);
-      color: var(--el-color-primary);
-
-      .el-tree-node__label,
-      .el-tree-node__expand-icon {
-        color: var(--el-color-primary);
-      }
-    }
-
-    // 选中态（highlight-current）：主色淡背景 + 主色文字 + 左侧指示条
-    &.is-current > .el-tree-node__content {
-      background-color: var(--el-color-primary-light-9);
-      color: var(--el-color-primary);
-      font-weight: 600;
-      position: relative;
-
-      // 左侧主色指示条，凸显当前选中节点
-      // &::before {
-      //   content: '';
-      //   position: absolute;
-      //   left: 0;
-      //   top: 4px;
-      //   bottom: 4px;
-      //   width: 3px;
-      //   border-radius: 2px;
-      //   background-color: var(--el-color-primary);
-      // }
-
-      .el-tree-node__label,
-      .el-tree-node__expand-icon {
-        color: var(--el-color-primary);
-      }
-    }
-
-    // 展开/折叠图标
-    .el-tree-node__expand-icon {
-      color: var(--el-text-color-secondary);
-      transition:
-        transform 0.2s ease,
-        color 0.2s ease;
-
-      &.expanded {
-        transform: rotate(90deg);
-      }
-
-      &.is-leaf {
-        color: transparent;
-      }
-    }
-
-    .el-tree-node__label {
-      font-size: 14px;
-      color: var(--el-text-color-primary);
-      transition: color 0.2s ease;
-    }
-  }
-}
+@use './base';
+@use './element-plus';
+@use './el-tree';
+@use './autofill';

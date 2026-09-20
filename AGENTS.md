@@ -14,12 +14,12 @@
 
 ## 目录说明
 
-| 路径 | 说明 |
-|---|---|
-| `fastify/` | 后端服务：Fastify 5 + TypeBox + Drizzle + better-auth + Redis，文档入口 [fastify/AGENTS.md](./fastify/AGENTS.md) |
-| `vue3-admin/` | 前端管理台：Vue 3 + Vite + Pinia + Element Plus + Tailwind，文档入口 [vue3-admin/AGENTS.md](./vue3-admin/AGENTS.md) |
-| `docker-compose.yml` | 本地基础设施：PostgreSQL 16（库 store）、Redis 7（密码 redis123）、MySQL 8（备用），端口仅绑定 127.0.0.1 |
-| `README.md` | 项目简介（待补充） |
+| 路径                 | 说明                                                                                                                |
+| -------------------- | ------------------------------------------------------------------------------------------------------------------- |
+| `fastify/`           | 后端服务：Fastify 5 + TypeBox + Drizzle + better-auth + Redis，文档入口 [fastify/AGENTS.md](./fastify/AGENTS.md)    |
+| `vue3-admin/`        | 前端后台骨架（admin-template）：Vue 3 + Vite + Pinia + Element Plus + Tailwind，内置登录/系统管理/dashboard 示例等基础能力，无业务模块，文档入口 [vue3-admin/AGENTS.md](./vue3-admin/AGENTS.md) |
+| `docker-compose.yml` | 本地基础设施：PostgreSQL 16（库 store）、Redis 7（密码 redis123）、MySQL 8（备用），端口仅绑定 127.0.0.1            |
+| `README.md`          | 项目简介（待补充）                                                                                                  |
 
 ## 公共约束
 
@@ -48,7 +48,7 @@
 
 ## 子项目文档
 
-| 项目 | 入口文档 | 主题文档目录 |
-|---|---|---|
-| fastify（后端） | [fastify/AGENTS.md](./fastify/AGENTS.md) | `fastify/docs/` |
-| vue3-admin（前端） | [vue3-admin/AGENTS.md](./vue3-admin/AGENTS.md) | `vue3-admin/docs/` |
+| 项目               | 入口文档                                       | 主题文档目录       |
+| ------------------ | ---------------------------------------------- | ------------------ |
+| fastify（后端）    | [fastify/AGENTS.md](./fastify/AGENTS.md)       | `fastify/docs/`    |
+| vue3-admin（前端骨架） | [vue3-admin/AGENTS.md](./vue3-admin/AGENTS.md) | `vue3-admin/docs/` |

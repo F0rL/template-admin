@@ -22,7 +22,7 @@ const activeTab = useVModel(props, 'activeTab', emit)
     </div>
 
     <!-- Tab switcher -->
-    <div class="relative mt-8 flex hidden w-full rounded-lg bg-slate-100 p-1">
+    <div class="relative mt-8 flex w-full rounded-lg bg-slate-100 p-1">
       <!-- Sliding background indicator -->
       <div
         class="absolute top-1 left-1 z-0 h-[calc(100%-8px)] w-[calc(50%-4px)] rounded-lg bg-blue-600 transition-transform duration-300 ease-out"

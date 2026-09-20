@@ -7,11 +7,6 @@ import { config } from '@/config'
 
 import dashboardRoutes from './modules/dashboard'
 import systemRoutes from './modules/system'
-import patrolRoutes from './modules/patrol'
-import studentRoutes from './modules/student'
-import evaluationRoutes from './modules/evaluation'
-import fengfanRoutes from './modules/fengfan'
-import awardRoutes from './modules/award'
 
 declare module 'vue-router' {
   interface RouteMeta {
@@ -47,11 +42,6 @@ export const constantRoutes: RouteRecordRaw[] = [
 export const asyncRoutes: RouteRecordRaw[] = [
   ...dashboardRoutes,
   ...systemRoutes,
-  ...patrolRoutes,
-  ...studentRoutes,
-  ...evaluationRoutes,
-  ...fengfanRoutes,
-  ...awardRoutes
 ]
 
 const router = createRouter({

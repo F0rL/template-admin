@@ -103,7 +103,7 @@ defineExpose({ open })
       :disabled="saveMutation.isPending.value"
     >
       <el-form-item label="旧密码" prop="oldPwd">
-        <el-input v-model="formModel.oldPwd" placeholder="请输入旧密码" />
+        <el-input v-model="formModel.oldPwd" placeholder="请输入旧密码" autocomplete="off" />
       </el-form-item>
       <el-form-item label="新密码" prop="newPwd1">
         <el-input
@@ -111,6 +111,7 @@ defineExpose({ open })
           type="password"
           show-password
           placeholder="请输入新密码"
+          autocomplete="new-password"
         />
       </el-form-item>
       <el-form-item label="确认新密码" prop="newPwd2">
@@ -119,6 +120,7 @@ defineExpose({ open })
           type="password"
           show-password
           placeholder="请再次输入新密码"
+          autocomplete="new-password"
         />
       </el-form-item>
     </el-form>

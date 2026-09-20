@@ -1,0 +1,85 @@
+// =============================================
+// el-tree 全局美化
+// ---------------------------------------------
+// 统一优化部门/组织树等场景的视觉表现：
+// - hover 浅色填充背景 + 主色文字
+// - 选中节点 (highlight-current) 主色淡背景 + 左侧主色指示条
+// - 节点内容圆角 + 过渡动效
+// - 展开/折叠图标颜色与过渡
+// 颜色取自 Element Plus 设计 token，随主题切换自动同步。
+// =============================================
+
+.el-tree {
+  --el-tree-node-hover-bg-color: var(--el-color-primary-light-9);
+  background-color: transparent;
+
+  .el-tree-node {
+    // 节点内容容器：圆角 + 过渡
+    .el-tree-node__content {
+      height: 32px;
+      padding-right: 8px;
+      border-radius: 6px;
+      transition:
+        background-color 0.2s ease,
+        color 0.2s ease;
+    }
+
+    // hover 态：浅主色背景 + 主色文字
+    .el-tree-node__content:hover {
+      background-color: var(--el-tree-node-hover-bg-color);
+      color: var(--el-color-primary);
+
+      .el-tree-node__label,
+      .el-tree-node__expand-icon {
+        color: var(--el-color-primary);
+      }
+    }
+
+    // 选中态（highlight-current）：主色淡背景 + 主色文字 + 左侧指示条
+    &.is-current > .el-tree-node__content {
+      background-color: var(--el-color-primary-light-9);
+      color: var(--el-color-primary);
+      font-weight: 600;
+      position: relative;
+
+      // 左侧主色指示条，凸显当前选中节点
+      // &::before {
+      //   content: '';
+      //   position: absolute;
+      //   left: 0;
+      //   top: 4px;
+      //   bottom: 4px;
+      //   width: 3px;
+      //   border-radius: 2px;
+      //   background-color: var(--el-color-primary);
+      // }
+
+      .el-tree-node__label,
+      .el-tree-node__expand-icon {
+        color: var(--el-color-primary);
+      }
+    }
+
+    // 展开/折叠图标
+    .el-tree-node__expand-icon {
+      color: var(--el-text-color-secondary);
+      transition:
+        transform 0.2s ease,
+        color 0.2s ease;
+
+      &.expanded {
+        transform: rotate(90deg);
+      }
+
+      &.is-leaf {
+        color: transparent;
+      }
+    }
+
+    .el-tree-node__label {
+      font-size: 14px;
+      color: var(--el-text-color-primary);
+      transition: color 0.2s ease;
+    }
+  }
+}

@@ -1,0 +1,22 @@
+// =============================================
+// Element Plus 组件全局定制
+// ---------------------------------------------
+// 跨页面通用的 Element Plus 样式覆盖在此追加；
+// 独立的大块组件主题（如 el-tree）请单独建文件。
+// =============================================
+
+// 筛选表单：栅格布局下去掉 el-form-item 默认底间距，保证容器上下留白一致
+
+.g-filter-form {
+  // display: flex;
+  // flex-direction: column;
+  // gap: 16px;
+
+  .el-form-item {
+    margin-bottom: 0;
+  }
+}
+
+.el-drawer .el-drawer__header {
+  margin-bottom: 0;
+}
