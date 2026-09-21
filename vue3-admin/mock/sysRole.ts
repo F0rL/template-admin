@@ -1,6 +1,17 @@
 import type { MockMethod } from 'vite-plugin-mock'
 import { makeResp, makePageResp, makeErrorResp, paginate } from './utils'
-import { roles } from './db'
+import { roles, menus } from './db'
+
+/** 按角色绑定的 menuIdsJSON 解析出菜单列表（RoleEntity.menuList 契约） */
+function menuListOf(role: (typeof roles)[number]): { id: string; title: string }[] {
+  let ids: string[] = []
+  try {
+    ids = JSON.parse(role.menuIdsJSON) as string[]
+  } catch {
+    ids = []
+  }
+  return menus.filter(m => ids.includes(m.id)).map(m => ({ id: m.id, title: m.title }))
+}
 
 export default [
   {
@@ -25,7 +36,7 @@ export default [
         name: role.name,
         isDelHandle: role.id !== '10086',
         status: { value: role.status, text: role.status === 1 ? '启用' : '禁用' },
-        menuList: [],
+        menuList: menuListOf(role),
         localUser: [],
         workUser: [],
         menuIdsJSON: role.menuIdsJSON,
