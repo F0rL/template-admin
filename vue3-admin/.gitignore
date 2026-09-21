@@ -21,11 +21,9 @@ dist-ssr
 *.sw?
 
 # AI
-*.trae
-*.opencode
-docs
-AGENTS.md
-.workbuddy
+# *.trae
+# *.opencode
+# *.workbuddy
 
 # OS
 .DS_Store
