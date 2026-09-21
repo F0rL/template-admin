@@ -107,7 +107,7 @@ async function handleRefresh() {
 <template>
   <div class="h-page flex gap-4">
     <!-- 左侧部门树 -->
-    <div class="flex h-full min-h-0 w-60 shrink-0 flex-col rounded bg-white p-4 shadow-sm">
+    <div class="panel-card flex h-full min-h-0 w-60 shrink-0 flex-col">
       <div class="mb-3 flex shrink-0 items-center gap-2">
         <span class="text-text-primary text-sm font-semibold">组织架构</span>
       </div>
@@ -134,7 +134,7 @@ async function handleRefresh() {
     </div>
 
     <!-- 右侧成员列表 -->
-    <div class="flex min-h-0 min-w-0 flex-1 flex-col rounded bg-white p-4 shadow-sm">
+    <div class="panel-card flex min-h-0 min-w-0 flex-1 flex-col">
       <!-- 操作栏 -->
       <div class="mb-4 flex shrink-0 items-center justify-between">
         <div class="flex items-center">

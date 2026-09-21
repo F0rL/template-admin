@@ -82,31 +82,25 @@ const pieOption = shallowRef<EChartsOption>({
 
 <template>
   <div class="flex flex-col gap-4">
-    <el-card shadow="never">
-      <template #header>
-        <span class="font-semibold">访问趋势</span>
-      </template>
+    <div class="panel-card">
+      <div class="mb-4 font-semibold">访问趋势</div>
       <div class="h-80 w-full">
         <VChart :option="lineOption" autoresize />
       </div>
-    </el-card>
+    </div>
     <div class="grid grid-cols-1 gap-4 xl:grid-cols-2">
-      <el-card shadow="never">
-        <template #header>
-          <span class="font-semibold">模块使用统计</span>
-        </template>
+      <div class="panel-card">
+        <div class="mb-4 font-semibold">模块使用统计</div>
         <div class="h-80 w-full">
           <VChart :option="barOption" autoresize />
         </div>
-      </el-card>
-      <el-card shadow="never">
-        <template #header>
-          <span class="font-semibold">浏览器占比</span>
-        </template>
+      </div>
+      <div class="panel-card">
+        <div class="mb-4 font-semibold">浏览器占比</div>
         <div class="h-80 w-full">
           <VChart :option="pieOption" autoresize />
         </div>
-      </el-card>
+      </div>
     </div>
   </div>
 </template>

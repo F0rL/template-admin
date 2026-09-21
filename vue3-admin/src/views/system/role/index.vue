@@ -64,7 +64,7 @@ function handleSuccess() {
 
 <template>
   <div class="flex h-page flex-col">
-    <div class="flex min-h-0 flex-1 flex-col rounded bg-white p-4 shadow-sm">
+    <div class="panel-card flex min-h-0 flex-1 flex-col">
       <div class="mb-4 flex shrink-0 items-center">
         <el-button type="primary" @click="handleAdd">
           <template #icon><IconEpPlus /></template>

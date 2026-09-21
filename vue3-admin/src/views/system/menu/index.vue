@@ -25,10 +25,10 @@ const {
   refetch,
 } = useQuery({
   queryKey: menuKeys.trees(),
-  queryFn: ({ signal }) => sysMenuApi.fetchMenuList({ searchKey: searchKey.value }, signal),
+  queryFn: ({ signal }) => sysMenuApi.fetchMenuTree({ searchKey: searchKey.value }, signal),
 })
 
-const treeData = computed(() => data.value?.list ?? [])
+const treeData = computed(() => data.value ?? [])
 
 const toggleShowMutation = useMutation({
   mutationFn: async ({ rowId, val }: { rowId: string; val: boolean }) => {
@@ -86,6 +86,7 @@ function handleSearch() {
 
 function handleReset() {
   searchKey.value = ''
+  handleSearch()
 }
 
 function handleExpandAll() {
@@ -131,7 +132,7 @@ async function handleDelete(row: MenuTreeNode) {
 
 <template>
   <div class="flex h-page flex-col">
-    <div class="rounded bg-white p-4 shadow-sm mb-4 shrink-0">
+    <div class="panel-card mb-4 shrink-0">
       <div class="flex items-center">
         <el-input
           v-model="searchKey"
@@ -150,7 +151,7 @@ async function handleDelete(row: MenuTreeNode) {
         </el-button>
       </div>
     </div>
-    <div class="rounded bg-white p-4 shadow-sm flex min-h-0 flex-1 flex-col">
+    <div class="panel-card flex min-h-0 flex-1 flex-col">
       <div class="mb-4 flex items-center">
         <el-button type="primary" @click="openCreate">
           <template #icon><IconEpPlus /></template>
@@ -172,7 +173,6 @@ async function handleDelete(row: MenuTreeNode) {
         :data="treeData"
         :loading="loading"
         default-expand-all
-        :tree-props="{ children: 'childrenList', hasChildren: 'hasChildren' }"
       >
         <template #icon="{ row }">
           <el-icon v-if="row.icon && iconMap[row.icon]" :size="18">
