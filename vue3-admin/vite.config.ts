@@ -7,7 +7,7 @@ import Components from 'unplugin-vue-components/vite'
 import { ElementPlusResolver } from 'unplugin-vue-components/resolvers'
 import Icons from 'unplugin-icons/vite'
 import IconsResolver from 'unplugin-icons/resolver'
-import { viteMockServe } from 'vite-plugin-mock'
+import { mockDevServerPlugin } from 'vite-plugin-mock-dev-server'
 
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), 'VITE_APP_')
@@ -16,9 +16,14 @@ export default defineConfig(({ mode }) => {
     base: env.VITE_APP_BASE_URL || '/',
     plugins: [
       // dev server 中间件层拦截 /api 请求（proxy 之前），生产构建天然无 mock
-      viteMockServe({
-        enable: env.VITE_APP_USE_MOCK === 'true',
-        mockPath: 'mock',
+      mockDevServerPlugin({
+        enabled: env.VITE_APP_USE_MOCK === 'true',
+        dir: 'mock',
+        // 默认 include 仅匹配 *.mock.ts 等带 .mock. 的文件名，本项目沿用原文件名，显式放开；
+        // db.ts / utils.ts 是纯数据源与工具模块（无 defineMock 默认导出），必须排除：
+        // 若被扫描，插件会把其命名导出误当作 mock 配置，产生幽灵项遮蔽后续 handler（实测空响应）
+        include: ['**/*.ts'],
+        exclude: ['**/db.ts', '**/utils.ts'],
       }),
       tailwindcss(),
       vue(),

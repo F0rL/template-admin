@@ -1,20 +1,16 @@
 <script setup lang="ts">
-import { ref, reactive, computed, useTemplateRef } from 'vue'
-import { useMutation } from '@tanstack/vue-query'
+import { ref, reactive } from 'vue'
 import type { FormRules } from 'element-plus'
 import SelectIcon from '@/components/SelectIcon/index.vue'
 import type { MenuPayload, MenuTreeNode } from '@/api/system/sysMenu'
 import * as sysMenuApi from '@/api/system/sysMenu'
 import { message } from '@/utils/feedback'
+import { useDialogForm } from '@/composables/useDialogForm'
 
 const emit = defineEmits<{
   success: []
 }>()
 
-const visible = ref(false)
-const editingRow = ref<MenuTreeNode | null>(null)
-const formRef = useTemplateRef('formRef')
-const loading = ref(false)
 const parentList = ref<{ id: string; title: string }[]>([])
 
 function createDefaultMenu(): MenuPayload {
@@ -35,28 +31,28 @@ const rules: FormRules = {
   order: [{ required: true, message: '请输入排序号', trigger: 'blur' }],
 }
 
-const isEdit = computed(() => !!editingRow.value)
+const { visible, loading, editingRow, isEdit, formRef, open, close, validate, createSaveMutation } =
+  useDialogForm<MenuTreeNode>({
+    reset: () => {
+      Object.assign(model, createDefaultMenu())
+      formRef.value?.clearValidate()
+    },
+    load: async editing => {
+      await loadParents()
+      if (editing) await loadEntity()
+    },
+    onSaveSuccess: () => emit('success'),
+  })
 
-const saveMutation = useMutation({
-  mutationFn: (payload: MenuPayload) =>
-    payload.id ? sysMenuApi.updateMenu(payload) : sysMenuApi.createMenu(payload),
-  onSuccess: () => {
-    message.success('保存成功')
-    visible.value = false
-    emit('success')
-  },
-})
-
-function resetForm() {
-  Object.assign(model, createDefaultMenu())
-  formRef.value?.clearValidate()
-}
+const saveMutation = createSaveMutation<MenuPayload>(payload =>
+  payload.id ? sysMenuApi.updateMenu(payload) : sysMenuApi.createMenu(payload),
+)
 
 async function loadParents() {
   try {
     const data = await sysMenuApi.fetchParentMenuAll()
     let list: { id: string; title: string }[] = data ?? []
-    if (isEdit.value && editingRow.value?.id) {
+    if (editingRow.value?.id) {
       list = list.filter(item => item.id !== editingRow.value!.id)
     }
     parentList.value = list
@@ -77,13 +73,12 @@ async function loadEntity() {
     model.isMenuShow = entity.isMenuShow ?? true
     model.parentId = entity.parent?.id ?? '-1'
   } catch {
-    visible.value = false
+    close()
   }
 }
 
 async function handleSave() {
-  const valid = await formRef.value?.validate().catch(() => false)
-  if (!valid) return
+  if (!(await validate())) return
 
   if (model.parentId !== '-1' && !model.path) {
     message.error('非顶级菜单请输入路由路径')
@@ -95,28 +90,11 @@ async function handleSave() {
     payload.parentId = null
   }
 
-  if (isEdit.value) {
-    payload.id = editingRow.value!.id
+  if (editingRow.value) {
+    payload.id = editingRow.value.id
   }
 
   saveMutation.mutate(payload)
-}
-
-/** 打开新增/编辑菜单抽屉 */
-async function open(row?: MenuTreeNode) {
-  editingRow.value = row ?? null
-  visible.value = true
-  loading.value = true
-  try {
-    await loadParents()
-    if (isEdit.value) {
-      await loadEntity()
-    } else {
-      resetForm()
-    }
-  } finally {
-    loading.value = false
-  }
 }
 
 defineExpose({ open })

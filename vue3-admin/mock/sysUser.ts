@@ -1,4 +1,4 @@
-import type { MockMethod } from 'vite-plugin-mock'
+import { defineMock } from 'vite-plugin-mock-dev-server'
 import type { UserListItem } from '../src/api/system/sysUser'
 import { makeResp, makePageResp, makeErrorResp, paginate } from './utils'
 import { users, roleNameOf, type MockUser } from './db'
@@ -24,11 +24,11 @@ function toListItem(u: MockUser): UserListItem {
   }
 }
 
-export default [
+export default defineMock([
   {
     url: '/api/SysUser/GetUserList',
-    method: 'get',
-    response: ({ query }) => {
+    method: 'GET',
+    body: ({ query }) => {
       const searchKey = String(query.searchKey ?? '').toLowerCase()
       const filtered = searchKey
         ? users.filter(
@@ -41,17 +41,17 @@ export default [
   },
   {
     url: '/api/SysUser/GetUserEntity',
-    method: 'get',
-    response: ({ query }) => {
+    method: 'GET',
+    body: ({ query }) => {
       const user = users.find(u => u.id === query.id)
       if (!user) return makeErrorResp('用户不存在')
       return makeResp(toListItem(user))
     },
   },
   // 以下写操作假成功：不改动 db 数据
-  { url: '/api/SysUser/CreateUser', method: 'post', response: () => makeResp(null) },
-  { url: '/api/SysUser/UpdateUser', method: 'post', response: () => makeResp(null) },
-  { url: '/api/SysUser/DeleteUser', method: 'post', response: () => makeResp(null) },
-  { url: '/api/SysUser/ResetPwd', method: 'post', response: () => makeResp(null) },
-  { url: '/api/SysUser/UpdatePwd', method: 'post', response: () => makeResp(null) },
-] as MockMethod[]
+  { url: '/api/SysUser/CreateUser', method: 'POST', body: () => makeResp(null) },
+  { url: '/api/SysUser/UpdateUser', method: 'POST', body: () => makeResp(null) },
+  { url: '/api/SysUser/DeleteUser', method: 'POST', body: () => makeResp(null) },
+  { url: '/api/SysUser/ResetPwd', method: 'POST', body: () => makeResp(null) },
+  { url: '/api/SysUser/UpdatePwd', method: 'POST', body: () => makeResp(null) },
+])

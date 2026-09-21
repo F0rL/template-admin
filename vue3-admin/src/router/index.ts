@@ -1,5 +1,5 @@
 import type { RouteRecordRaw } from 'vue-router'
-import { createRouter, createWebHistory, createWebHashHistory } from 'vue-router'
+import { createRouter, createWebHistory } from 'vue-router'
 import NProgress from 'nprogress'
 import { useUserStore } from '@/stores/modules/user'
 import { usePermissionStore } from '@/stores/modules/permission'
@@ -68,12 +68,20 @@ router.beforeEach(async to => {
   }
 
   if (!permissionStore.isRoutesLoaded) {
-    // id 由后端生成且非空，作为用户信息已加载的可靠标记
-    if (!userStore.userInfo.id) {
-      await userStore.loadUserInfo()
+    try {
+      // id 由后端生成且非空，作为用户信息已加载的可靠标记
+      if (!userStore.userInfo.id) {
+        await userStore.loadUserInfo()
+      }
+      await permissionStore.generateRoutes()
+      return { path: to.path, query: to.query, replace: true }
+    } catch {
+      // 用户信息 / 动态路由加载失败（鉴权失效、网络异常等）：清会话回登录页，避免守卫 reject 白屏
+      userStore.resetToken()
+      permissionStore.resetRoutes()
+      NProgress.done()
+      return `/login?redirect=${to.path}`
     }
-    await permissionStore.generateRoutes()
-    return { path: to.path, query: to.query, replace: true }
   }
 })
 

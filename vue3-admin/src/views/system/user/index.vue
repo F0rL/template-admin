@@ -68,6 +68,7 @@ async function handleDelete(ids: string[], name?: string) {
   selectedRows.value = []
 }
 
+/** 查询/重置共用：回到第 1 页触发请求（已在第 1 页时手动 refetch） */
 function handleSearch() {
   if (page.value === 1) refetch()
   else page.value = 1
@@ -75,8 +76,7 @@ function handleSearch() {
 
 function handleReset() {
   searchKey.value = ''
-  if (page.value === 1) refetch()
-  else page.value = 1
+  handleSearch()
 }
 
 function handleSelectionChange(rows: UserListItem[]) {
@@ -142,9 +142,9 @@ function handleSuccess() {
       </div>
 
       <ProTable
-        auto-height
         v-model:current-page="page"
         v-model:page-size="pageSize"
+        auto-height
         :columns="columns"
         :data="tableData"
         :loading="loading"
@@ -175,8 +175,8 @@ function handleSuccess() {
             v-if="row.isDelHandle !== false"
             type="primary"
             link
-            @click="handleEdit(row)"
             :disabled="!row._disabled"
+            @click="handleEdit(row)"
           >
             编辑
           </el-button>
@@ -184,8 +184,8 @@ function handleSuccess() {
             v-if="row.isDelHandle !== false"
             type="danger"
             link
-            @click="handleDelete([row.id], row.name)"
             :disabled="!row._disabled"
+            @click="handleDelete([row.id], row.name)"
           >
             删除
           </el-button>

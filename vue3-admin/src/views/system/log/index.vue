@@ -109,7 +109,7 @@ function openDetail(row: LogRow) {
 </script>
 
 <template>
-  <div class="flex h-page flex-col">
+  <div class="h-page flex flex-col">
     <!-- 搜索筛选区 -->
     <div class="panel-card mb-4 shrink-0">
       <el-form class="g-filter-form" label-width="80px">
@@ -147,7 +147,7 @@ function openDetail(row: LogRow) {
               />
             </el-form-item>
           </el-col>
-          <el-col :span="8" :offset="8">
+          <el-col :span="8" :offset="16">
             <el-form-item>
               <div class="flex w-full justify-end">
                 <el-button type="primary" @click="handleSearch">
@@ -168,9 +168,9 @@ function openDetail(row: LogRow) {
     <!-- 表格区 -->
     <div class="panel-card flex min-h-0 flex-1 flex-col">
       <ProTable
-        auto-height
         v-model:current-page="pageIndex"
         v-model:page-size="pageSize"
+        auto-height
         :columns="columns"
         :data="tableData"
         :loading="loading"

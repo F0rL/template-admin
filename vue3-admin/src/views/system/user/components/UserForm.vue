@@ -1,27 +1,25 @@
 <script setup lang="ts">
-import { ref, reactive, computed, useTemplateRef } from 'vue'
-import { useMutation, useQuery } from '@tanstack/vue-query'
+import { ref, reactive, computed } from 'vue'
+import { useQuery } from '@tanstack/vue-query'
 import type { FormRules, UploadFile, UploadRawFile, UploadRequestOptions } from 'element-plus'
 import type { RoleListItem } from '@/api/system/sysRole'
-import { roleKeys } from '@/api/system/sysRole'
+import { SUPER_ADMIN_ROLE_ID, roleKeys } from '@/api/system/sysRole'
 import * as sysRoleApi from '@/api/system/sysRole'
 import type { UserPayload } from '@/api/system/sysUser'
 import * as sysUserApi from '@/api/system/sysUser'
 import * as sysFileApi from '@/api/system/sysFile'
 import { useUserStore } from '@/stores/modules/user'
 import { confirm, message, notify, withLoading } from '@/utils/feedback'
-import { resolveFileUrl } from '@/utils/file'
-import { validateImageFile } from '@/utils/file'
+import { md5Hash } from '@/utils/encrypt'
+import { resolveFileUrl, validateImageFile } from '@/utils/file'
+import { useDialogForm } from '@/composables/useDialogForm'
+
 const emit = defineEmits<{
   success: []
 }>()
 
 const userStore = useUserStore()
 
-const visible = ref(false)
-const editingId = ref('')
-const formRef = useTemplateRef('formRef')
-const loading = ref(false)
 const fileList = ref<UploadFile[]>([])
 
 /** 角色列表（缓存 1 分钟，避免每次打开抽屉都重新请求） */
@@ -32,7 +30,7 @@ const { data: roleOptions } = useQuery<RoleListItem[]>({
   staleTime: 60 * 1000,
 })
 
-/** 表单初始值，用于 resetForm 整体重置 */
+/** 表单初始值，用于打开抽屉时整体重置 */
 const INITIAL_FORM = {
   userId: '',
   name: '',
@@ -48,8 +46,19 @@ const INITIAL_FORM = {
 
 const formModel = reactive({ ...INITIAL_FORM })
 
-const isEdit = computed(() => !!editingId.value)
-const isSuperAdmin = computed(() => userStore.roles.some(role => role.id === '10086'))
+const isSuperAdmin = computed(() =>
+  userStore.roles.some(role => role.id === SUPER_ADMIN_ROLE_ID),
+)
+
+const { visible, loading, editingRow, isEdit, formRef, open, close, validate, createSaveMutation } =
+  useDialogForm({
+    reset: () => {
+      Object.assign(formModel, INITIAL_FORM)
+      fileList.value = []
+      formRef.value?.clearValidate()
+    },
+    onSaveSuccess: () => emit('success'),
+  })
 
 const rules = computed<FormRules>(() => ({
   name: [{ required: true, message: '请输入姓名', trigger: 'blur' }],
@@ -82,38 +91,19 @@ const rules = computed<FormRules>(() => ({
   roleIds: [{ required: true, type: 'array', message: '请选择角色', trigger: 'change' }],
 }))
 
-const saveMutation = useMutation({
-  mutationFn: (payload: UserPayload) =>
-    isEdit.value ? sysUserApi.updateUser(payload) : sysUserApi.createUser(payload),
-  onSuccess: () => {
-    message.success('保存成功')
-    visible.value = false
-    emit('success')
-  },
-})
-
-function resetForm() {
-  Object.assign(formModel, INITIAL_FORM)
-  fileList.value = []
-  formRef.value?.clearValidate()
-}
-
-/** 打开新增/编辑账户抽屉 */
-function open(row?: { id: string }) {
-  editingId.value = row?.id ?? ''
-  resetForm()
-  visible.value = true
-}
+const saveMutation = createSaveMutation<UserPayload>(payload =>
+  editingRow.value ? sysUserApi.updateUser(payload) : sysUserApi.createUser(payload),
+)
 
 /** 抽屉打开动画结束后加载数据，避免过渡期间更新组件触发 Vue 内部错误 */
 async function handleOpened() {
-  if (!isEdit.value) return
+  if (!editingRow.value) return
 
   loading.value = true
   formRef.value?.clearValidate()
 
   try {
-    const entity = await sysUserApi.fetchUserEntity(editingId.value)
+    const entity = await sysUserApi.fetchUserEntity(editingRow.value.id)
     formModel.name = entity.name
     formModel.userId = entity.id
     formModel.avatar = entity.avatar
@@ -134,7 +124,7 @@ async function handleOpened() {
       : []
   } catch {
     message.error('加载失败')
-    visible.value = false
+    close()
   } finally {
     loading.value = false
   }
@@ -142,13 +132,12 @@ async function handleOpened() {
 
 /** 保存账户 */
 async function handleSave() {
-  const valid = await formRef.value?.validate().catch(() => false)
-  if (!valid) return
+  if (!(await validate())) return
 
   const payload: UserPayload = {
     userId: formModel.userId,
     name: formModel.name,
-    pwd: isEdit.value ? null : formModel.pwd ? btoa(formModel.pwd) : null,
+    pwd: isEdit.value ? null : formModel.pwd ? md5Hash(formModel.pwd) : null,
     status: formModel.status,
     avatar: formModel.avatar,
     roleIds: formModel.roleIds,
@@ -156,8 +145,8 @@ async function handleSave() {
     wechat_DepId: formModel.wechat_DepId,
     wechat_DepName: formModel.wechat_DepName,
   }
-  if (isEdit.value) {
-    payload.id = editingId.value
+  if (editingRow.value) {
+    payload.id = editingRow.value.id
   }
   saveMutation.mutate(payload)
 }
@@ -195,7 +184,7 @@ function handleRemove() {
 async function handleResetPwd() {
   const ok = await confirm('确认重置此账号密码？', '提示')
   if (!ok) return
-  await withLoading(sysUserApi.resetUserPwd({ userId: editingId.value }), '重置中...')
+  await withLoading(sysUserApi.resetUserPwd({ userId: editingRow.value!.id }), '重置中...')
   notify.success('重置成功，新密码为: 账号 + @258   （示例: user@258）')
 }
 

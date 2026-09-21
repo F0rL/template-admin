@@ -1,6 +1,8 @@
-import type { MockMethod } from 'vite-plugin-mock'
-
-export type { MockMethod }
+/**
+ * mock 响应助手（vite-plugin-mock-dev-server）。
+ * 请求上下文类型由插件内置 MockRequest 提供（query 为 Record<string, any>），
+ * 本文件只保留响应结构构造函数。
+ */
 
 /** 构造标准成功响应（结构对齐 src/types/global.d.ts 的 ApiResponse） */
 export function makeResp<T>(payload: T): ApiResponse<T> {

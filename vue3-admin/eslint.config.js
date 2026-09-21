@@ -22,7 +22,7 @@ export default [
   ...tseslint.configs.recommended,
 
   // Vue 3 推荐规则（含 .vue 文件解析器与处理器）
-  ...pluginVue.configs['flat/essential'],
+  ...pluginVue.configs['flat/recommended'],
 
   // 对 .vue 文件使用 TypeScript 解析器
   {
@@ -53,8 +53,6 @@ export default [
       'vue/multi-word-component-names': 'off',
       'no-unused-vars': 'off',
       '@typescript-eslint/no-unused-vars': 'warn',
-      // 允许使用 any（渐进式迁移）
-      '@typescript-eslint/no-explicit-any': 'off',
     },
   },
 

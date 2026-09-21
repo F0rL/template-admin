@@ -102,7 +102,7 @@ function openCreate() {
 }
 
 /** 打开编辑菜单抽屉 */
-function openEdit(row: any) {
+function openEdit(row: MenuTreeNode) {
   menuFormRef.value?.open(row)
 }
 
@@ -111,12 +111,12 @@ function handleSuccess() {
 }
 
 /** 切换侧边栏展示状态 */
-async function handleToggleShow(row: any, val: boolean) {
+async function handleToggleShow(row: MenuTreeNode, val: boolean) {
   toggleShowMutation.mutate({ rowId: row.id, val })
 }
 
 /** 删除菜单 */
-async function handleDelete(row: any) {
+async function handleDelete(row: MenuTreeNode) {
   if (row._disabled) return
   const ok = await confirm(`确定删除菜单「${row.title}」？`, '删除确认', {
     type: 'error',
@@ -134,8 +134,8 @@ async function handleDelete(row: any) {
     <div class="rounded bg-white p-4 shadow-sm mb-4 shrink-0">
       <div class="flex items-center">
         <el-input
-          class="w-60!"
           v-model="searchKey"
+          class="w-60!"
           placeholder="搜索菜单名称或路由"
           clearable
           @keyup.enter="handleSearch"
@@ -166,8 +166,8 @@ async function handleDelete(row: any) {
         </el-button>
       </div>
       <ProTable
-        auto-height
         ref="proTableRef"
+        auto-height
         :columns="columns"
         :data="treeData"
         :loading="loading"
@@ -184,7 +184,7 @@ async function handleDelete(row: any) {
           <el-switch
             :model-value="row.isMenuShow !== false"
             :loading="switchingId === row.id"
-            @change="(val: boolean) => handleToggleShow(row, val)"
+            @change="val => handleToggleShow(row, val === true)"
           />
         </template>
         <template #action="{ row }">

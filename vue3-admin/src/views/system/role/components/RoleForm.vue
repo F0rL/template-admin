@@ -1,22 +1,18 @@
 <script setup lang="ts">
-import { ref, reactive, computed, useTemplateRef } from 'vue'
-import { useMutation } from '@tanstack/vue-query'
+import { ref, reactive, useTemplateRef } from 'vue'
 import type { RolePayload } from '@/api/system/sysRole'
 import * as sysRoleApi from '@/api/system/sysRole'
 import type { MenuTreeNode } from '@/api/system/sysMenu'
 import * as sysMenuApi from '@/api/system/sysMenu'
 import type { FormRules } from 'element-plus'
 import { message } from '@/utils/feedback'
+import { useDialogForm } from '@/composables/useDialogForm'
 
 const emit = defineEmits<{
   success: []
 }>()
 
-const visible = ref(false)
-const editingId = ref('')
-const formRef = useTemplateRef('formRef')
 const treeRef = useTemplateRef('treeRef')
-const loading = ref(false)
 const expandFlag = ref(true)
 const selectAllFlag = ref(false)
 const formModel = reactive<{ name: string; status: number }>({
@@ -31,26 +27,51 @@ const rules: FormRules = {
   name: [{ required: true, message: '请输入角色名称', trigger: 'blur' }],
 }
 
-const isEdit = computed(() => !!editingId.value)
-
-const saveMutation = useMutation({
-  mutationFn: (payload: RolePayload) =>
-    payload.id ? sysRoleApi.updateRole(payload) : sysRoleApi.createRole(payload),
-  onSuccess: () => {
-    message.success('保存成功')
-    visible.value = false
-    emit('success')
+const {
+  visible,
+  loading,
+  editingRow,
+  isEdit,
+  formRef,
+  open,
+  close,
+  validate,
+  createSaveMutation,
+} = useDialogForm({
+  reset: () => {
+    expandFlag.value = true
+    selectAllFlag.value = false
+    formModel.name = ''
+    formModel.status = 1
+    defaultCheckedKeys.value = []
   },
+  load: async editing => {
+    try {
+      const treeData = await sysMenuApi.fetchMenuTree()
+      menuTreeData.value = treeData ?? []
+
+      if (editing) {
+        const entity = await sysRoleApi.fetchRoleEntity(editing.id)
+        if (entity) {
+          formModel.name = entity.name
+          formModel.status = entity.status.value
+          try {
+            defaultCheckedKeys.value = JSON.parse(entity.menuIdsJSON || '[]')
+          } catch {
+            defaultCheckedKeys.value = []
+          }
+        }
+      }
+    } catch {
+      close()
+    }
+  },
+  onSaveSuccess: () => emit('success'),
 })
 
-function resetForm() {
-  expandFlag.value = true
-  selectAllFlag.value = false
-  formModel.name = ''
-  formModel.status = 1
-  formRef.value?.clearValidate()
-  defaultCheckedKeys.value = []
-}
+const saveMutation = createSaveMutation<RolePayload>(payload =>
+  payload.id ? sysRoleApi.updateRole(payload) : sysRoleApi.createRole(payload),
+)
 
 function collectAllKeys(nodes: MenuTreeNode[]): string[] {
   return nodes.flatMap(n => [n.id, ...(n.children ? collectAllKeys(n.children) : [])])
@@ -59,10 +80,13 @@ function collectAllKeys(nodes: MenuTreeNode[]): string[] {
 function toggleExpandAll() {
   const expanded = !expandFlag.value
   expandFlag.value = expanded
-  const tree = treeRef.value as any
+  const tree = treeRef.value
   if (!tree) return
-  const nodes = tree.store._getAllNodes()
-  nodes.forEach((item: any) => {
+  // el-tree 内部 store 私有 API，仅用于批量展开/折叠；升级 Element Plus 需回归验证
+  const nodes = (
+    tree.store as unknown as { _getAllNodes: () => { expanded: boolean }[] }
+  )._getAllNodes()
+  nodes.forEach(item => {
     item.expanded = expanded
   })
 }
@@ -74,16 +98,15 @@ function toggleSelectAll() {
 }
 
 async function handleSave() {
-  const valid = await formRef.value?.validate().catch(() => false)
-  if (!valid) return
+  if (!(await validate())) return
 
   const tree = treeRef.value
   if (!tree) return
 
   const checkedNodes = tree.getCheckedNodes(false, false) ?? []
   const halfCheckedNodes = tree.getHalfCheckedNodes() ?? []
-  const menuIds = [...checkedNodes.map((n: any) => n.id), ...halfCheckedNodes.map((n: any) => n.id)]
-  const menuIdsJSON = JSON.stringify(checkedNodes.map((n: any) => n.id))
+  const menuIds = [...checkedNodes.map(n => n.id), ...halfCheckedNodes.map(n => n.id)]
+  const menuIdsJSON = JSON.stringify(checkedNodes.map(n => n.id))
 
   if (menuIds.length === 0) {
     message.error('请选择权限菜单')
@@ -98,40 +121,10 @@ async function handleSave() {
   }
 
   if (isEdit.value) {
-    payload.id = editingId.value
+    payload.id = editingRow.value!.id
   }
 
   saveMutation.mutate(payload)
-}
-
-/** 打开新增/编辑角色抽屉 */
-async function open(row?: { id: string }) {
-  editingId.value = row?.id ?? ''
-  visible.value = true
-  loading.value = true
-  resetForm()
-
-  try {
-    const treeData = await sysMenuApi.fetchMenuTree()
-    menuTreeData.value = treeData ?? []
-
-    if (isEdit.value) {
-      const entity = await sysRoleApi.fetchRoleEntity(editingId.value)
-      if (entity) {
-        formModel.name = entity.name
-        formModel.status = entity.status.value
-        try {
-          defaultCheckedKeys.value = JSON.parse(entity.menuIdsJSON || '[]')
-        } catch {
-          defaultCheckedKeys.value = []
-        }
-      }
-    }
-  } catch {
-    visible.value = false
-  } finally {
-    loading.value = false
-  }
 }
 
 defineExpose({ open })

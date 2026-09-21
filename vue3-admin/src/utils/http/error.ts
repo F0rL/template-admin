@@ -69,23 +69,27 @@ function handleUnauthorized(msg = '登录已过期，请重新登录') {
  * 情况①：无响应体（HTTP 非 200、网络异常、请求取消）。
  * 仅负责副作用（toast / 401 跳转）；调用方（拦截器）始终 reject，让业务层感知失败以关闭 loading 等。
  */
-export function handleNetworkError(error: any): void {
+export function handleNetworkError(error: unknown): void {
   // 请求取消（vue-query 组件卸载时自动 abort signal → axios CanceledError）
   // 静默处理，不弹 toast
   if (axios.isCancel(error)) return
   // 业务错误已由响应拦截器统一处理，放行即可
   if (error instanceof BusinessError) return
 
-  const status = error?.response?.status
-  if (status === 401) {
-    handleUnauthorized()
+  if (axios.isAxiosError(error)) {
+    const status = error.response?.status
+    if (status === 401) {
+      handleUnauthorized()
+      return
+    }
+    const serverMsg = (error.response?.data as { msg?: string } | undefined)?.msg
+    const msg =
+      (serverMsg && String(serverMsg)) ||
+      (status ? HTTP_STATUS_MESSAGES[status] : '') ||
+      (status ? `请求失败 (${status})` : '网络连接失败，请检查网络')
+    message.error(msg)
     return
   }
 
-  const serverMsg = error?.response?.data?.msg
-  const msg =
-    (serverMsg && String(serverMsg)) ||
-    (status ? HTTP_STATUS_MESSAGES[status] : '') ||
-    (status ? `请求失败 (${status})` : '网络连接失败，请检查网络')
-  message.error(msg)
+  message.error('网络连接失败，请检查网络')
 }

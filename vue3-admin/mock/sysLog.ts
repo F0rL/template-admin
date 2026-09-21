@@ -1,4 +1,4 @@
-import type { MockMethod } from 'vite-plugin-mock'
+import { defineMock } from 'vite-plugin-mock-dev-server'
 import type { LogDetail } from '../src/api/system/sysLog'
 import { makeResp, makePageResp, paginate } from './utils'
 import { httpLogs, errorLogs, randomLogItem, LOG_HOSTS, LOG_USERS } from './db'
@@ -25,27 +25,27 @@ function paginateQuery<T>(list: T[], query: Record<string, unknown>) {
 const USER_AGENT =
   'Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/151.0.0.0 Safari/537.36'
 
-export default [
+export default defineMock([
   {
     url: '/api/SysLog/GetHttpLogList',
-    method: 'get',
-    response: ({ query }) => {
+    method: 'GET',
+    body: ({ query }) => {
       const { list, total } = paginateQuery(filterBySearchKey(httpLogs, String(query.searchKey ?? '')), query)
       return makePageResp(list, total)
     },
   },
   {
     url: '/api/SysLog/GetErrorLogList',
-    method: 'get',
-    response: ({ query }) => {
+    method: 'GET',
+    body: ({ query }) => {
       const { list, total } = paginateQuery(filterBySearchKey(errorLogs, String(query.searchKey ?? '')), query)
       return makePageResp(list, total)
     },
   },
   {
     url: '/api/SysLog/GetHttpLogEntity',
-    method: 'get',
-    response: ({ query }) => {
+    method: 'GET',
+    body: ({ query }) => {
       const id = Number(query.id)
       const item = httpLogs.find(l => l.id === id)
       const detail: LogDetail = item
@@ -75,8 +75,8 @@ export default [
   },
   {
     url: '/api/SysLog/GetErrorLogEntity',
-    method: 'get',
-    response: ({ query }) => {
+    method: 'GET',
+    body: ({ query }) => {
       const id = Number(query.id)
       const item = errorLogs.find(l => l.id === id)
       const detail: LogDetail = item
@@ -99,4 +99,4 @@ export default [
       return makeResp(detail)
     },
   },
-] as MockMethod[]
+])

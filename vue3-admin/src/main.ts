@@ -5,6 +5,11 @@ import router from './router'
 import { queryClient } from '@/lib/queryClient'
 import App from './App.vue'
 
+import './styles/theme.css'
+import './styles/tailwind.css'
+import './styles/index.scss'
+import 'nprogress/nprogress.css'
+
 function bootstrap() {
   const app = createApp(App)
   app.use(pinia)
@@ -15,10 +20,5 @@ function bootstrap() {
   })
   app.mount('#app')
 }
-
-import './styles/theme.css'
-import './styles/tailwind.css'
-import './styles/index.scss'
-import 'nprogress/nprogress.css'
 
 bootstrap()

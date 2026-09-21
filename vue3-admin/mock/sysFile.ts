@@ -1,12 +1,12 @@
-import type { MockMethod } from 'vite-plugin-mock'
+import { defineMock } from 'vite-plugin-mock-dev-server'
 import { makeResp } from './utils'
 
-export default [
+export default defineMock([
   {
     // 仅 mock 上传（用户表单头像依赖 res.path）；List/Entity/Del 响应类型未定，不 mock
     url: '/api/SysFile/SysFileUpload',
-    method: 'post',
-    response: () =>
+    method: 'POST',
+    body: () =>
       makeResp({
         id: '900000000000000001',
         oldName: 'avatar.png',
@@ -14,4 +14,4 @@ export default [
         path: '/file/mock-avatar.png',
       }),
   },
-] as MockMethod[]
+])

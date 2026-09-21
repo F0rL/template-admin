@@ -1,5 +1,10 @@
 import { apiGet, apiPost } from '@/utils/http'
 
+// ==================== Constants ====================
+
+/** 超级管理员角色 id（系统内置角色，不可编辑/删除） */
+export const SUPER_ADMIN_ROLE_ID = '10086'
+
 // ==================== Types ====================
 
 export interface RoleEntity {

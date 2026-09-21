@@ -4,7 +4,7 @@ import { useQuery, keepPreviousData, useQueryClient } from '@tanstack/vue-query'
 import ProTable from '@/components/ProTable/index.vue'
 import type { ProTableColumn } from '@/components/ProTable/index.vue'
 import type { RoleListItem } from '@/api/system/sysRole'
-import { roleKeys } from '@/api/system/sysRole'
+import { SUPER_ADMIN_ROLE_ID, roleKeys } from '@/api/system/sysRole'
 import * as sysRoleApi from '@/api/system/sysRole'
 import { confirm, message, withLoading } from '@/utils/feedback'
 import RoleForm from './components/RoleForm.vue'
@@ -32,7 +32,7 @@ const columns: ProTableColumn<RoleListItem>[] = [
 ]
 
 function isSystemRole(id: string): boolean {
-  return id === '10086'
+  return id === SUPER_ADMIN_ROLE_ID
 }
 
 /** 打开新增角色抽屉 */
@@ -41,12 +41,12 @@ function handleAdd() {
 }
 
 /** 打开编辑角色抽屉 */
-function handleEdit(row: any) {
+function handleEdit(row: RoleListItem) {
   roleFormRef.value?.open(row)
 }
 
 /** 删除角色 */
-async function handleDelete(row: any) {
+async function handleDelete(row: RoleListItem) {
   const ok = await confirm(`确定删除角色「${row.name}」？`, '删除确认', {
     type: 'error',
     confirmButtonText: '删除',
@@ -72,9 +72,9 @@ function handleSuccess() {
         </el-button>
       </div>
       <ProTable
-        auto-height
         v-model:current-page="pageIndex"
         v-model:page-size="pageSize"
+        auto-height
         :columns="columns"
         :data="tableData"
         :loading="loading"
@@ -82,10 +82,10 @@ function handleSuccess() {
         paginated
       >
         <template #action="{ row }">
-          <el-button type="primary" link @click="handleEdit(row)" :disabled="isSystemRole(row.id)">
+          <el-button type="primary" link :disabled="isSystemRole(row.id)" @click="handleEdit(row)">
             编辑
           </el-button>
-          <el-button type="danger" link @click="handleDelete(row)" :disabled="isSystemRole(row.id)">
+          <el-button type="danger" link :disabled="isSystemRole(row.id)" @click="handleDelete(row)">
             删除
           </el-button>
         </template>

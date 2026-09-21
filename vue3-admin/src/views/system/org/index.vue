@@ -163,9 +163,9 @@ async function handleRefresh() {
       <!-- 表格 -->
       <div class="flex min-h-0 flex-1 flex-col">
         <ProTable
-          auto-height
           v-model:current-page="pageIndex"
           v-model:page-size="pageSize"
+          auto-height
           :columns="columns"
           :data="tableData"
           :loading="userLoading"

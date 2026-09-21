@@ -3,7 +3,7 @@ import { computed, useAttrs, useTemplateRef } from 'vue'
 
 export type ProTableTagType = 'primary' | 'success' | 'warning' | 'danger' | 'info'
 
-export interface ProTableColumn<T = any> {
+export interface ProTableColumn<T = unknown> {
   type?: 'selection' | 'index' | 'expand' | 'tag'
   prop?: keyof T & string
   label?: string
@@ -16,8 +16,8 @@ export interface ProTableColumn<T = any> {
   showOverflowTooltip?: boolean
   /** 选择列：行是否可勾选 */
   selectable?: (row: T, index: number) => boolean
-  /** 纯文本转换，`row: T` 类型安全 */
-  formatter?: (row: T, column: any, cellValue: any, index: number) => unknown
+  /** 纯文本转换，`row: T` 类型安全；column 为列定义本身 */
+  formatter?: (row: T, column: ProTableColumn<T>, cellValue: unknown, index: number) => unknown
   /** 字典映射；键为字段原始值，`text` 为显示文本，`type` 为 tag 颜色（仅 `type: 'tag'` 时生效） */
   valueEnum?: Partial<Record<string | number, { text: string; type?: ProTableTagType }>> & {
     true?: { text: string; type?: ProTableTagType }
@@ -50,6 +50,7 @@ const props = withDefaults(
     currentPage: 1,
     pageSize: 10,
     autoHeight: false,
+    data: undefined,
   },
 )
 
@@ -105,7 +106,7 @@ function cellText(col: ProTableColumn<T>, row: T, index: number): unknown {
   const item = resolveEnum(col, row)
   if (item) return item.text
   const raw = cellValue(col, row)
-  if (col.formatter) return col.formatter(row, col as any, raw, index)
+  if (col.formatter) return col.formatter(row, col, raw, index)
   return raw
 }
 
@@ -138,8 +139,8 @@ defineExpose({ elTableRef })
 <template>
   <el-table
     ref="elTableRef"
-    :class="props.autoHeight ? 'flex min-h-0 flex-1 flex-col' : undefined"
     v-loading="props.loading"
+    :class="props.autoHeight ? 'flex min-h-0 flex-1 flex-col' : undefined"
     :data="props.data"
     v-bind="tableBind"
   >

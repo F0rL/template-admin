@@ -1,4 +1,4 @@
-import type { MockMethod } from 'vite-plugin-mock'
+import { defineMock } from 'vite-plugin-mock-dev-server'
 import type { MenuTreeNode } from '../src/api/system/sysMenu'
 import { makeResp, makePageResp, makeErrorResp } from './utils'
 import { menus, type MockMenu } from './db'
@@ -30,17 +30,17 @@ function buildTree(items: MockMenu[]): MenuTreeNode[] {
   return roots
 }
 
-export default [
+export default defineMock([
   // 当前用户右侧菜单（GET，对齐 API 层 apiGet）
   {
     url: '/api/SysMenu/GetUserRightMenu',
-    method: 'get',
-    response: () => makeResp(buildTree(menus.filter(m => m.isMenuShow))),
+    method: 'GET',
+    body: () => makeResp(buildTree(menus.filter(m => m.isMenuShow))),
   },
   {
     url: '/api/SysMenu/GetMenuTree',
-    method: 'get',
-    response: ({ query }) => {
+    method: 'GET',
+    body: ({ query }) => {
       const searchKey = String(query.searchKey ?? '').toLowerCase()
       const filtered = searchKey
         ? menus.filter(
@@ -53,8 +53,8 @@ export default [
   // 菜单列表不分页（API 层参数仅 searchKey），但响应为 PaginatedData 包装
   {
     url: '/api/SysMenu/GetMenuList',
-    method: 'get',
-    response: ({ query }) => {
+    method: 'GET',
+    body: ({ query }) => {
       const searchKey = String(query.searchKey ?? '').toLowerCase()
       const filtered = searchKey
         ? menus.filter(
@@ -66,8 +66,8 @@ export default [
   },
   {
     url: '/api/SysMenu/GetMenuEntity',
-    method: 'get',
-    response: ({ query }) => {
+    method: 'GET',
+    body: ({ query }) => {
       const item = menus.find(m => m.id === query.id)
       if (!item) return makeErrorResp('菜单不存在')
       return makeResp(toTreeNode(item))
@@ -75,11 +75,11 @@ export default [
   },
   {
     url: '/api/SysMenu/GetParentMenuAll',
-    method: 'get',
-    response: () => makeResp(menus.map(m => ({ id: m.id, title: m.title }))),
+    method: 'GET',
+    body: () => makeResp(menus.map(m => ({ id: m.id, title: m.title }))),
   },
   // 以下写操作假成功：不改动 db 数据
-  { url: '/api/SysMenu/CreateMenu', method: 'post', response: () => makeResp(null) },
-  { url: '/api/SysMenu/UpdateMenu', method: 'post', response: () => makeResp(null) },
-  { url: '/api/SysMenu/DeleteMenu', method: 'post', response: () => makeResp(null) },
-] as MockMethod[]
+  { url: '/api/SysMenu/CreateMenu', method: 'POST', body: () => makeResp(null) },
+  { url: '/api/SysMenu/UpdateMenu', method: 'POST', body: () => makeResp(null) },
+  { url: '/api/SysMenu/DeleteMenu', method: 'POST', body: () => makeResp(null) },
+])

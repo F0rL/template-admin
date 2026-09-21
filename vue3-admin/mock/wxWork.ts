@@ -1,4 +1,4 @@
-import type { MockMethod } from 'vite-plugin-mock'
+import { defineMock } from 'vite-plugin-mock-dev-server'
 import type { OrgUserItem } from '../src/api/system/wxWork'
 import { makeResp, paginate } from './utils'
 import { depts, users, mobileOf } from './db'
@@ -30,18 +30,18 @@ function toOrgUser(u: (typeof users)[number]): OrgUserItem {
   }
 }
 
-export default [
+export default defineMock([
   // 部门树（POST，对齐 API 层 apiPost）
   {
     url: '/api/WxWork/GetTreeDepartmentList',
-    method: 'post',
-    response: () => makeResp(buildDeptTree()),
+    method: 'POST',
+    body: () => makeResp(buildDeptTree()),
   },
   // 组织架构树：departmentId=0 返回根部门，否则返回部门下用户；searchKey 按姓名/工号搜用户
   {
     url: '/api/WxWork/GetOrgTree',
-    method: 'get',
-    response: ({ query }) => {
+    method: 'GET',
+    body: ({ query }) => {
       const searchKey = String(query.searchKey ?? '').toLowerCase()
       if (searchKey) {
         const matched = users.filter(
@@ -68,8 +68,8 @@ export default [
   },
   {
     url: '/api/WxWork/GetUserEntity',
-    method: 'get',
-    response: ({ query }) => {
+    method: 'GET',
+    body: ({ query }) => {
       const user = users.find(u => u.userId === query.userId)
       if (!user) return makeResp(null)
       return makeResp({
@@ -84,8 +84,8 @@ export default [
   // 组织成员分页列表：data 为 { message, total }（字段名 message 对齐后端契约）
   {
     url: '/api/WxWork/GetUserList',
-    method: 'get',
-    response: ({ query }) => {
+    method: 'GET',
+    body: ({ query }) => {
       const dept = depts.find(d => d.id === String(query.departmentId ?? '1'))
       const searchKey = String(query.searchKey ?? '').toLowerCase()
       let matched = (dept?.userIds ?? [])
@@ -96,13 +96,14 @@ export default [
           u => u.name.toLowerCase().includes(searchKey) || u.userId.toLowerCase().includes(searchKey),
         )
       }
+      // 注意：分页参数名为 row（非 rows），对齐后端契约
       const { list, total } = paginate(matched, Number(query.page) || 1, Number(query.row) || 10)
       return makeResp({ message: list.map(toOrgUser), total })
     },
   },
   {
     url: '/api/WxWork/UserRefresh',
-    method: 'get',
-    response: () => makeResp(null),
+    method: 'GET',
+    body: () => makeResp(null),
   },
-] as MockMethod[]
+])

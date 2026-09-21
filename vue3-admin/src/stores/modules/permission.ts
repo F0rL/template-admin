@@ -19,7 +19,6 @@ export const usePermissionStore = defineStore('permission', () => {
     if (!routesLoadedPromise) {
       routesLoadedPromise = (async () => {
         const menus = await sysMenuApi.fetchUserRightMenu()
-        console.log(menus)
         menuData.value = menus
 
         const allowedPaths = collectMenuPaths(menus)
