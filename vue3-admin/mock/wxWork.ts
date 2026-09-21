@@ -1,0 +1,108 @@
+import type { MockMethod } from 'vite-plugin-mock'
+import type { OrgUserItem } from '../src/api/system/wxWork'
+import { makeResp, paginate } from './utils'
+import { depts, users, mobileOf } from './db'
+
+function buildDeptTree() {
+  const map = new Map<string, { id: string; name: string; children: unknown[] }>()
+  const roots: unknown[] = []
+  for (const d of depts) map.set(d.id, { id: d.id, name: d.name, children: [] })
+  for (const d of depts) {
+    const node = map.get(d.id)!
+    const parent = d.parentId ? map.get(d.parentId) : undefined
+    if (parent) parent.children.push(node)
+    else roots.push(node)
+  }
+  return roots
+}
+
+function toOrgUser(u: (typeof users)[number]): OrgUserItem {
+  return {
+    userid: u.userId,
+    name: u.name,
+    mobile: mobileOf(u.userId),
+    gender: u.gender,
+    genderText: u.gender === 1 ? '男' : '女',
+    position: u.position,
+    department: depts
+      .filter(d => d.userIds.includes(u.userId))
+      .map(d => ({ id: d.id, name: d.name })),
+  }
+}
+
+export default [
+  // 部门树（POST，对齐 API 层 apiPost）
+  {
+    url: '/api/WxWork/GetTreeDepartmentList',
+    method: 'post',
+    response: () => makeResp(buildDeptTree()),
+  },
+  // 组织架构树：departmentId=0 返回根部门，否则返回部门下用户；searchKey 按姓名/工号搜用户
+  {
+    url: '/api/WxWork/GetOrgTree',
+    method: 'get',
+    response: ({ query }) => {
+      const searchKey = String(query.searchKey ?? '').toLowerCase()
+      if (searchKey) {
+        const matched = users.filter(
+          u => u.name.toLowerCase().includes(searchKey) || u.userId.toLowerCase().includes(searchKey),
+        )
+        return makeResp(
+          matched.map(u => ({ id: u.userId, name: `${u.name}（${u.userId}）`, type: 2, isLeaf: true })),
+        )
+      }
+      const departmentId = String(query.departmentId ?? '0')
+      if (departmentId === '0') {
+        return makeResp(
+          depts.filter(d => !d.parentId).map(d => ({ id: d.id, name: d.name, type: 1, isLeaf: false })),
+        )
+      }
+      const dept = depts.find(d => d.id === departmentId)
+      const items =
+        dept?.userIds
+          .map(uid => users.find(u => u.userId === uid))
+          .filter(u => !!u)
+          .map(u => ({ id: u.userId, name: `${u.name}（${u.userId}）`, type: 2, isLeaf: true })) ?? []
+      return makeResp(items)
+    },
+  },
+  {
+    url: '/api/WxWork/GetUserEntity',
+    method: 'get',
+    response: ({ query }) => {
+      const user = users.find(u => u.userId === query.userId)
+      if (!user) return makeResp(null)
+      return makeResp({
+        name: user.name,
+        userid: user.userId,
+        mobile: mobileOf(user.userId),
+        department: [Number(user.depId)],
+        departmentNames: [user.depName],
+      })
+    },
+  },
+  // 组织成员分页列表：data 为 { message, total }（字段名 message 对齐后端契约）
+  {
+    url: '/api/WxWork/GetUserList',
+    method: 'get',
+    response: ({ query }) => {
+      const dept = depts.find(d => d.id === String(query.departmentId ?? '1'))
+      const searchKey = String(query.searchKey ?? '').toLowerCase()
+      let matched = (dept?.userIds ?? [])
+        .map(uid => users.find(u => u.userId === uid))
+        .filter(u => !!u)
+      if (searchKey) {
+        matched = matched.filter(
+          u => u.name.toLowerCase().includes(searchKey) || u.userId.toLowerCase().includes(searchKey),
+        )
+      }
+      const { list, total } = paginate(matched, Number(query.page) || 1, Number(query.row) || 10)
+      return makeResp({ message: list.map(toOrgUser), total })
+    },
+  },
+  {
+    url: '/api/WxWork/UserRefresh',
+    method: 'get',
+    response: () => makeResp(null),
+  },
+] as MockMethod[]

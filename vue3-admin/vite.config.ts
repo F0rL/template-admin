@@ -7,17 +7,19 @@ import Components from 'unplugin-vue-components/vite'
 import { ElementPlusResolver } from 'unplugin-vue-components/resolvers'
 import Icons from 'unplugin-icons/vite'
 import IconsResolver from 'unplugin-icons/resolver'
+import { viteMockServe } from 'vite-plugin-mock'
 
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), 'VITE_APP_')
 
   return {
     base: env.VITE_APP_BASE_URL || '/',
-    define: {
-      // 构建期字面量，由 .env 驱动；false 时 mock 分支被 Rollup 彻底 tree-shake
-      __USE_MOCK__: JSON.stringify(env.VITE_APP_USE_MOCK === 'true'),
-    },
     plugins: [
+      // dev server 中间件层拦截 /api 请求（proxy 之前），生产构建天然无 mock
+      viteMockServe({
+        enable: env.VITE_APP_USE_MOCK === 'true',
+        mockPath: 'mock',
+      }),
       tailwindcss(),
       vue(),
       AutoImport({

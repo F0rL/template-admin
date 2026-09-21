@@ -40,8 +40,6 @@ export default [
       globals: {
         ...globals.browser,
         ...globals.node,
-        // vite.config.ts 中 define 的构建期字面量
-        __USE_MOCK__: 'readonly',
       },
     },
   },
