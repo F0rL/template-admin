@@ -64,6 +64,5 @@ export function deleteMenu(data: { ids: string[] }) {
 
 export const menuKeys = {
   all: ['menus'] as const,
-  list: () => [...menuKeys.all, 'list'] as const,
   trees: () => [...menuKeys.all, 'tree'] as const,
 }

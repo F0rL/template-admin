@@ -29,14 +29,7 @@ const {
   isFetching: loading,
   refetch,
 } = useQuery({
-  queryKey: computed(() => [
-    ...logKeys.all,
-    logType.value,
-    pageIndex.value,
-    pageSize.value,
-    searchKey.value,
-    dateRange.value,
-  ]),
+  queryKey: [...logKeys.all, logType, pageIndex, pageSize],
   queryFn: ({ signal }) => {
     const params: LogListParams = {
       page: pageIndex.value,
@@ -80,13 +73,12 @@ const columns = computed<ProTableColumn<LogRow>[]>(() => {
 
 const disabledDate = (date: Date) => date.getTime() > Date.now()
 
-/** 切换日志类型，重置到第一页 */
+/** 切换日志类型，重置到第一页（类型在 key 中，已在第 1 页时 key 变化自动请求） */
 function handleTypeChange() {
-  if (pageIndex.value === 1) refetch()
-  else pageIndex.value = 1
+  if (pageIndex.value !== 1) pageIndex.value = 1
 }
 
-/** 查询 */
+/** 查询/重置共用：回到第 1 页触发请求（已在第 1 页时手动 refetch） */
 function handleSearch() {
   if (pageIndex.value === 1) refetch()
   else pageIndex.value = 1
@@ -96,8 +88,7 @@ function handleSearch() {
 function handleReset() {
   searchKey.value = ''
   dateRange.value = null
-  if (pageIndex.value === 1) refetch()
-  else pageIndex.value = 1
+  handleSearch()
 }
 
 /** 查看详情 */

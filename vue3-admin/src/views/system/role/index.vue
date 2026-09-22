@@ -54,11 +54,12 @@ async function handleDelete(row: RoleListItem) {
   if (!ok) return
   await withLoading(sysRoleApi.deleteRole({ ids: [row.id] }), '删除中...')
   message.success('删除成功')
-  await queryClient.invalidateQueries({ queryKey: roleKeys.lists() })
+  // all 前缀同时失效分页列表与表单的角色下拉选项
+  await queryClient.invalidateQueries({ queryKey: roleKeys.all })
 }
 
 function handleSuccess() {
-  queryClient.invalidateQueries({ queryKey: roleKeys.lists() })
+  queryClient.invalidateQueries({ queryKey: roleKeys.all })
 }
 </script>
 

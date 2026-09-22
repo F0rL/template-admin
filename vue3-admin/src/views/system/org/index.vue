@@ -25,19 +25,17 @@ const {
   queryFn: ({ signal }) => wxWorkApi.fetchDepartmentTree(undefined, signal),
 })
 
-// 默认选中第一个部门后加载用户列表
-const selectedDeptId = computed(() => currentDeptId.value || '')
-
+// 默认选中第一个部门后加载用户列表（无选中时不请求）
 const {
   data: userListData,
   isFetching: userLoading,
   refetch,
 } = useQuery({
-  queryKey: [...orgKeys.users(), selectedDeptId, pageIndex, pageSize],
+  queryKey: [...orgKeys.users(), currentDeptId, pageIndex, pageSize],
   queryFn: ({ signal }) =>
     wxWorkApi.fetchOrgUserList(
       {
-        departmentId: selectedDeptId.value,
+        departmentId: currentDeptId.value,
         searchKey: searchKey.value || undefined,
         page: pageIndex.value,
         row: pageSize.value,
@@ -45,7 +43,7 @@ const {
       signal,
     ),
   placeholderData: keepPreviousData,
-  enabled: () => !!selectedDeptId.value,
+  enabled: () => !!currentDeptId.value,
 })
 
 const tableData = computed(() => userListData.value?.message ?? [])
@@ -99,8 +97,10 @@ function handleReset() {
 async function handleRefresh() {
   await withLoading(wxWorkApi.refreshOrgUsers(), '刷新中...')
   message.success('缓存刷新成功')
-  await queryClient.invalidateQueries({ queryKey: orgKeys.departments() })
-  await queryClient.invalidateQueries({ queryKey: orgKeys.users() })
+  await Promise.all([
+    queryClient.invalidateQueries({ queryKey: orgKeys.departments() }),
+    queryClient.invalidateQueries({ queryKey: orgKeys.users() }),
+  ])
 }
 </script>
 

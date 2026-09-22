@@ -22,9 +22,9 @@ const userStore = useUserStore()
 
 const fileList = ref<UploadFile[]>([])
 
-/** 角色列表（缓存 1 分钟，避免每次打开抽屉都重新请求） */
+/** 角色下拉选项（独立 options 键，与分页列表数据形状区分；缓存 1 分钟避免每次打开抽屉重新请求） */
 const { data: roleOptions } = useQuery<RoleListItem[]>({
-  queryKey: roleKeys.lists(),
+  queryKey: roleKeys.options(),
   queryFn: ({ signal }) =>
     sysRoleApi.fetchRoleList({ page: 1, rows: 999 }, signal).then(res => res.list ?? []),
   staleTime: 60 * 1000,

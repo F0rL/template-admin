@@ -60,6 +60,8 @@ export function fetchXxx(params?: XxxParams, signal?: AbortSignal) {
 queryFn: ({ signal }) => fetchUserList({ pageIndex: 1 }, signal)
 ```
 
+**列表搜索约定**：筛选条件（关键字、日期范围等）不放进 queryKey，由 queryFn 读取响应式值；查询/重置统一走"回到第 1 页触发请求（已在第 1 页时手动 refetch）"。资源类型类参数（如日志的 http/error）属于请求身份，仍放进 queryKey。
+
 **useMutation 仅在确实用到 onMutate / onSuccess / onError / onSettled 时使用**；生命周期内完成副作用（失效缓存、提示、loading 清理），不要在事件处理函数里重复写。
 
 ## 共享 QueryClient

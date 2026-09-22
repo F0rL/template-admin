@@ -63,4 +63,6 @@ export function deleteRole(data: { ids: string[] }) {
 export const roleKeys = {
   all: ['roles'] as const,
   lists: () => [...roleKeys.all, 'list'] as const,
+  /** 角色下拉选项（表单用，独立于分页列表的数据形状） */
+  options: () => [...roleKeys.all, 'options'] as const,
 }

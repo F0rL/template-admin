@@ -21,7 +21,7 @@ const menuFormRef = useTemplateRef('menuFormRef')
 
 const {
   data,
-  isPending: loading,
+  isFetching: loading,
   refetch,
 } = useQuery({
   queryKey: menuKeys.trees(),

@@ -10,7 +10,6 @@ import {
   fetchHttpLogDetail,
   fetchErrorLogDetail,
   type LogRow,
-  type LogDetail,
 } from '@/api/system/sysLog'
 
 const props = defineProps<{ visible: boolean; row: LogRow | null; type: 'http' | 'error' }>()
@@ -36,9 +35,9 @@ const { data: detail, isFetching } = useQuery({
         : fetchErrorLogDetail(props.row.id, signal)
       : Promise.resolve(null),
   enabled: () => !!props.visible && !!props.row,
+  /** 日志详情不可变，缓存期内重复查看直接命中缓存 */
+  staleTime: Infinity,
 })
-
-const d = computed<LogDetail | null>(() => detail.value ?? null)
 
 const isError = computed(() => props.type === 'error')
 </script>
@@ -58,7 +57,7 @@ const isError = computed(() => props.type === 'error')
             {{ isError ? '错误日志详情' : '请求日志详情' }}
           </h2>
           <p class="mt-0.5 text-sm text-gray-400">
-            #{{ d?.id ?? props.row?.id }} · {{ d?.actionName ?? props.row?.actionName }}
+            #{{ detail?.id ?? props.row?.id }} · {{ detail?.actionName ?? props.row?.actionName }}
           </p>
         </div>
         <el-button link @click="drawerVisible = false">
@@ -67,57 +66,59 @@ const isError = computed(() => props.type === 'error')
       </div>
 
       <div v-loading="isFetching" class="flex-1 overflow-y-auto px-6 py-4">
-        <el-empty v-if="!isFetching && !d" description="暂无日志数据" :image-size="60" />
+        <el-empty v-if="!isFetching && !detail" description="暂无日志数据" :image-size="60" />
 
         <template v-else>
           <el-descriptions :column="2" border class="log-desc">
-            <el-descriptions-item label="事件名称">{{ d?.actionName || '-' }}</el-descriptions-item>
+            <el-descriptions-item label="事件名称">{{ detail?.actionName || '-' }}</el-descriptions-item>
             <el-descriptions-item label="请求方式">
-              <el-tag size="small" effect="plain">{{ d?.method || '-' }}</el-tag>
+              <el-tag size="small" effect="plain">{{ detail?.method || '-' }}</el-tag>
             </el-descriptions-item>
 
             <el-descriptions-item label="响应状态">
               <el-tag
                 :type="
-                  d?.statusCode && d.statusCode >= 200 && d.statusCode < 300 ? 'success' : 'danger'
+                  detail?.statusCode && detail.statusCode >= 200 && detail.statusCode < 300
+                    ? 'success'
+                    : 'danger'
                 "
                 size="small"
               >
-                {{ d?.statusCode ?? '-' }}
+                {{ detail?.statusCode ?? '-' }}
               </el-tag>
             </el-descriptions-item>
-            <el-descriptions-item label="响应时长">{{ d?.elapsed ?? '-' }} ms</el-descriptions-item>
+            <el-descriptions-item label="响应时长">{{ detail?.elapsed ?? '-' }} ms</el-descriptions-item>
 
-            <el-descriptions-item label="调用人员">{{ d?.userName || '-' }}</el-descriptions-item>
-            <el-descriptions-item label="用户ID">{{ d?.userId || '-' }}</el-descriptions-item>
+            <el-descriptions-item label="调用人员">{{ detail?.userName || '-' }}</el-descriptions-item>
+            <el-descriptions-item label="用户ID">{{ detail?.userId || '-' }}</el-descriptions-item>
 
-            <el-descriptions-item label="请求IP">{{ d?.ipAddress || '-' }}</el-descriptions-item>
-            <el-descriptions-item label="请求主机">{{ d?.host || '-' }}</el-descriptions-item>
+            <el-descriptions-item label="请求IP">{{ detail?.ipAddress || '-' }}</el-descriptions-item>
+            <el-descriptions-item label="请求主机">{{ detail?.host || '-' }}</el-descriptions-item>
 
-            <el-descriptions-item label="控制器">{{ d?.controller || '-' }}</el-descriptions-item>
+            <el-descriptions-item label="控制器">{{ detail?.controller || '-' }}</el-descriptions-item>
             <el-descriptions-item v-if="!isError" label="事件类型">{{
-              d?.actionType || '-'
+              detail?.actionType || '-'
             }}</el-descriptions-item>
             <el-descriptions-item v-else label="用户类型">{{
-              d?.userType ?? '-'
+              detail?.userType ?? '-'
             }}</el-descriptions-item>
 
             <el-descriptions-item label="创建时间" :span="2">{{
-              d?.createTime || '-'
+              detail?.createTime || '-'
             }}</el-descriptions-item>
 
             <el-descriptions-item v-if="!isError" label="来源" :span="2">{{
-              d?.source || '-'
+              detail?.source || '-'
             }}</el-descriptions-item>
             <el-descriptions-item v-if="!isError" label="用户代理(UA)" :span="2">{{
-              d?.userAgent || '-'
+              detail?.userAgent || '-'
             }}</el-descriptions-item>
           </el-descriptions>
 
           <div class="mt-4">
             <div class="mb-1 text-sm font-medium text-gray-700">接口地址</div>
             <div class="rounded bg-gray-50 px-3 py-2 text-sm break-all text-gray-700">
-              {{ d?.url || '-' }}
+              {{ detail?.url || '-' }}
             </div>
           </div>
 
@@ -126,7 +127,7 @@ const isError = computed(() => props.type === 'error')
               <div class="mb-1 text-sm font-medium text-gray-700">错误信息</div>
               <pre
                 class="max-h-60 overflow-auto rounded bg-red-50 px-3 py-2 text-sm break-all whitespace-pre-wrap text-red-600"
-                >{{ d?.message || '-' }}</pre>
+                >{{ detail?.message || '-' }}</pre>
             </div>
           </template>
 
@@ -135,19 +136,19 @@ const isError = computed(() => props.type === 'error')
               <div class="mb-1 text-sm font-medium text-gray-700">请求参数</div>
               <pre
                 class="max-h-40 overflow-auto rounded bg-gray-50 px-3 py-2 text-sm break-all whitespace-pre-wrap text-gray-700"
-                >{{ d?.queryString || '-' }}</pre>
+                >{{ detail?.queryString || '-' }}</pre>
             </div>
             <div class="mt-4">
               <div class="mb-1 text-sm font-medium text-gray-700">请求体</div>
               <pre
                 class="max-h-60 overflow-auto rounded bg-gray-50 px-3 py-2 text-sm break-all whitespace-pre-wrap text-gray-700"
-                >{{ d?.body || '-' }}</pre>
+                >{{ detail?.body || '-' }}</pre>
             </div>
             <div class="mt-4">
               <div class="mb-1 text-sm font-medium text-gray-700">响应结果</div>
               <pre
                 class="max-h-40 overflow-auto rounded bg-gray-50 px-3 py-2 text-sm break-all whitespace-pre-wrap text-gray-700"
-                >{{ d?.message || '-' }}</pre>
+                >{{ detail?.message || '-' }}</pre>
             </div>
           </template>
         </template>

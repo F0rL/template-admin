@@ -118,8 +118,6 @@ export function fetchErrorLogDetail(id: number | string, signal?: AbortSignal) {
 
 export const logKeys = {
   all: ['logs'] as const,
-  httpList: (params: LogListParams) => [...logKeys.all, 'http', params] as const,
-  errorList: (params: LogListParams) => [...logKeys.all, 'error', params] as const,
   httpDetail: (id: number | string) => [...logKeys.all, 'http', 'detail', id] as const,
   errorDetail: (id: number | string) => [...logKeys.all, 'error', 'detail', id] as const,
 }
