@@ -1,0 +1,89 @@
+@import 'tailwindcss';
+
+/* =============================================
+ * Tailwind v4 Theme Integration
+ * ---------------------------------------------
+ * 将 antd 6 运行时 CSS 变量（cssVar 模式，由 ConfigProvider
+ * theme.token 生成）映射为 Tailwind 工具类。使用 var() 引用
+ * （非内联值）保证 bg-primary 等工具类与 antd 主题实时同步。
+ *
+ * antd 6 不再用 :root 覆盖设计变量（与 vue3-admin 的
+ * theme.css 方案不同），主题源头在 App.tsx 的 ConfigProvider。
+ *
+ * 生成的工具类示例：
+ *   bg-primary / text-primary / border-primary
+ *   bg-primary-bg / bg-danger / text-danger ...
+ * ============================================= */
+@theme {
+  /* Primary */
+  --color-primary: var(--ant-color-primary);
+  --color-primary-bg: var(--ant-color-primary-bg);
+
+  /* Text */
+  --color-text-primary: var(--ant-text-color);
+  --color-text-secondary: var(--ant-text-color-secondary);
+  --color-text-placeholder: var(--ant-text-color-placeholder);
+
+  /* Fill */
+  --color-fill-light: var(--ant-color-fill-tertiary);
+
+  /* Border */
+  --color-border-lighter: var(--ant-color-border-secondary);
+
+  /* Danger */
+  --color-danger: var(--ant-color-error);
+  --color-danger-bg: var(--ant-color-error-bg);
+}
+
+/* =============================================
+ * Custom Utilities
+ * ---------------------------------------------
+ * Tailwind 默认工具类未覆盖的复用样式，
+ * 命名与语义对齐 vue3-admin。
+ * ============================================= */
+
+/* 页面主体内容高度：视窗高度 - header(3.5rem / h-14) - 内容区 p-4 上下内边距(2rem)。
+   用于需要限制高度、内部独立滚动的布局（如部门树、表格等）。 */
+@utility h-page {
+  height: calc(100vh - 3.5rem - 2rem);
+}
+
+/* 内容块卡片：圆角 + 白色背景 + 内边距 + 轻阴影 */
+@utility panel-card {
+  border-radius: 0.25rem;
+  background-color: #fff;
+  padding: 1.25rem;
+  box-shadow: var(--shadow-sm);
+}
+
+/* 细滚动条：树形/列表滚动区域复用 */
+@utility scroll-thin {
+  &::-webkit-scrollbar {
+    width: 4px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background-color: var(--ant-color-border);
+    border-radius: 3px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background-color: transparent;
+  }
+}
+
+/* =============================================
+ * Animations
+ * ============================================= */
+
+/* 页面切换入场动画（对应 vue3-admin fade-slide transition） */
+@theme {
+  --animate-page-enter: page-enter 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes page-enter {
+  from {
+    opacity: 0;
+    transform: translateY(6px) scale(0.98);
+  }
+}

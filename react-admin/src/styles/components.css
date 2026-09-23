@@ -1,0 +1,61 @@
+/* =============================================
+ * 组件级全局覆盖（antd 类名定制 + 复用图形）
+ * ---------------------------------------------
+ * ConfigProvider theme token 无法覆盖的少量样式
+ * （如选中项右侧边条）与纯 CSS 图形放此文件。
+ * ============================================= */
+
+/* Sidebar 菜单选中态：右侧 3px 主色边（对齐 vue3-admin el-menu 定制） */
+.sidebar-menu .ant-menu-item-selected {
+  border-right: 3px solid var(--ant-color-primary);
+}
+
+/* 收起态菜单宽度跟随容器（antd 固定 80px，容器为 w-16 = 64px） */
+.sidebar-menu.ant-menu-inline-collapsed {
+  width: 100%;
+}
+
+/* 登录页二维码占位图形（对齐 vue3-admin qrcode-placeholder） */
+.qrcode-placeholder {
+  position: relative;
+  aspect-ratio: 1;
+  width: 100%;
+  border-radius: 16px;
+  background:
+    linear-gradient(90deg, #0f172a 10px, transparent 10px),
+    linear-gradient(#0f172a 10px, transparent 10px),
+    linear-gradient(135deg, #1e293b 0%, #2563eb 100%);
+  background-position:
+    0 0,
+    0 0,
+    0 0;
+  background-size:
+    22px 22px,
+    22px 22px,
+    100% 100%;
+  box-shadow: inset 0 0 0 14px #fff;
+}
+
+.qrcode-placeholder::before {
+  content: '';
+  position: absolute;
+  left: 16px;
+  top: 16px;
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  border: 8px solid #fff;
+  background: rgba(255, 255, 255, 0.4);
+}
+
+.qrcode-placeholder::after {
+  content: '';
+  position: absolute;
+  bottom: 16px;
+  right: 16px;
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  border: 8px solid #fff;
+  background: rgba(255, 255, 255, 0.4);
+}
