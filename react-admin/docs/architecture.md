@@ -42,7 +42,7 @@ mock/              # vite mock（见 docs/mock.md）
 - `asyncRoutes`（router/asyncRoutes.ts）= `modules/dashboard.tsx` + `modules/system.tsx`：权限路由池，path 与后端菜单 path 一致（无前导斜杠）。
 - AppRoutes 将权限路由作为 Layout 路由 children 挂载（useRoutes 无 addRoute 等价物，**增删路由 = 更新 permission store 的 routes state**）。
 - `*` 兜底（404 页）同样包 `AuthGuard`，兼作深链刷新的守卫入口：刷新时权限路由尚未生成（routes 为空），深链只能命中 splat 分支，由守卫触发菜单加载，加载完成后 useRoutes 重匹配到权限路由（splat 得分低于具体路径，不会抢占）。**禁止**把 `*` 放回 constantRoutes，否则深链刷新直接停在 404 且守卫永不执行。
-- 页面元信息放 route `handle`（title 等）。
+- 页面元信息放 route `handle`（title 等）；DefaultLayout 按权限路由表 + pathname 匹配叶子路由（declarative mode 无 `useMatches`，其为 data router 专属 API），取 handle.title 写入 `document.title`（登录/错误页保留 index.html 静态标题）。
 
 ### 权限路由链路
 
@@ -56,11 +56,11 @@ AuthGuard（token 存在且 isRoutesLoaded=false 时触发）
 → set({ menuData, routes, firstPath, isRoutesLoaded: true }) → useRoutes 重匹配
 ```
 
-`firstPath` 承担 `'/'` 索引重定向（index `<Navigate>`，等价 vue3-admin 的 Layout redirect）。
+`firstPath` 承担 `'/'` 索引重定向（index `<Navigate>`，等价 vue3-admin 的 Layout redirect）；`firstPath` 为空（无可见菜单）时兜底跳 `/error`，避免内容区空白。
 
 ### 守卫
 
-- `AuthGuard`：无 token → `/login?redirect=<pathname>`；加载中渲染 null；加载失败清会话回登录。NProgress 在此 start/done。
+- `AuthGuard`：无 token → `/login?redirect=<pathname>`；加载中渲染 null；加载失败清会话回登录。
 - `GuestGuard`：已登录访问 `/login` → 回 `/`。
 - 白名单页（/login、/error）由路由结构保证不经 AuthGuard；未登录访问其他路径（含未知路径）→ 登录页。
 
@@ -75,6 +75,7 @@ axios 拦截器等非组件上下文经 navigate 桥跳转/读路径；引用由
 - Sidebar 菜单：`buildMenuItems()`（SidebarItem.tsx 纯函数）把后端菜单树转为 antd Menu items——**叶子 key = `/${item.path}`（点击导航），父级 key = path || id（仅展开）**；Menu onClick 中仅 `key.startsWith('/')` 才 navigate。`isMenuShow !== false` 过滤。
 - Header：折叠按钮 + 面包屑（`findMenuTrail(menuData, pathname)`）+ 用户下拉（修改密码 / 退出登录）。
 - 页面切换动画：内容区以 `<ViewTransition default="page-fade">` 包 `<Suspense><Outlet/></Suspense>`（React 19.3 原生组件；RR 导航状态更新包在 startTransition 中故可激活过渡；动画定义见 `src/styles/components.css`，不支持该 API 的浏览器自动跳过动画）。
+- 内容区滚动：导航（pathname 变化）后 `scrollTo({ top: 0 })` 重置滚动位置，对应 vue3-admin 的 `scrollBehavior: () => ({ top: 0 })`。
 
 ## Stores（zustand）
 

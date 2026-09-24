@@ -61,37 +61,37 @@ export function AppRoutes() {
   const permissionRoutes = usePermissionStore(s => s.routes)
   const firstPath = usePermissionStore(s => s.firstPath)
 
-  return (
-    <Suspense fallback={null}>
-      {useRoutes([
-        ...constantRoutes,
-        {
-          path: '/',
-          element: (
-            <AuthGuard>
-              <DefaultLayout />
-            </AuthGuard>
-          ),
-          children: [
-            // '/' 跳首个可见菜单（对齐 vue3-admin Layout redirect）
-            ...(firstPath ? [{ index: true, element: <Navigate to={`/${firstPath}`} replace /> }] : []),
-            ...permissionRoutes,
-          ],
-        },
-        {
-          // 404 兜底，兼作深链刷新的守卫入口：刷新时权限路由尚未生成（routes 为空），
-          // 深链只能命中 splat 分支；由 AuthGuard 触发菜单加载，完成后 useRoutes 重匹配，
-          // 权限路由分支得分高于 splat 故优先命中。未登录访问未知路径 → 登录页。
-          path: '*',
-          element: (
-            <AuthGuard>
-              <ErrorPage />
-            </AuthGuard>
-          ),
-        },
-      ])}
-    </Suspense>
-  )
+  // 先用 useRoutes 求出 element 再渲染（避免在 JSX 表达式位置调用 hook，可读性更佳）
+  const element = useRoutes([
+    ...constantRoutes,
+    {
+      path: '/',
+      element: (
+        <AuthGuard>
+          <DefaultLayout />
+        </AuthGuard>
+      ),
+      children: [
+        // '/' 索引重定向（对齐 vue3-admin Layout redirect）：
+        // 无可见菜单（firstPath 为空）时兜底到 /error，避免内容区空白
+        { index: true, element: <Navigate to={firstPath ? `/${firstPath}` : '/error'} replace /> },
+        ...permissionRoutes,
+      ],
+    },
+    {
+      // 404 兜底，兼作深链刷新的守卫入口：刷新时权限路由尚未生成（routes 为空），
+      // 深链只能命中 splat 分支；由 AuthGuard 触发菜单加载，完成后 useRoutes 重匹配，
+      // 权限路由分支得分高于 splat 故优先命中。未登录访问未知路径 → 登录页。
+      path: '*',
+      element: (
+        <AuthGuard>
+          <ErrorPage />
+        </AuthGuard>
+      ),
+    },
+  ])
+
+  return <Suspense fallback={null}>{element}</Suspense>
 }
 
 export default function RouterRoot() {

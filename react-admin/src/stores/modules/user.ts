@@ -12,6 +12,9 @@ const EMPTY_USER: UserInfo = {
   sysRoleUsers: [],
 }
 
+/** 并发去重：StrictMode 双挂载等场景下多个调用方共享同一次请求（对齐 permission store 语义） */
+let userInfoPromise: Promise<UserInfo> | null = null
+
 interface UserState {
   token: string
   userInfo: UserInfo
@@ -38,9 +41,18 @@ export const useUserStore = create<UserState>()(
       },
 
       async loadUserInfo() {
-        const user = await authApi.fetchUserInfo()
-        set({ userInfo: user })
-        return user
+        // userInfo.id 为已加载标记，非空直接复用（AuthGuard 已先行判断，此处幂等兜底）
+        if (get().userInfo.id) return get().userInfo
+        if (!userInfoPromise) {
+          userInfoPromise = (async () => {
+            const user = await authApi.fetchUserInfo()
+            set({ userInfo: user })
+            return user
+          })().finally(() => {
+            userInfoPromise = null
+          })
+        }
+        return userInfoPromise
       },
 
       logout() {
@@ -48,6 +60,8 @@ export const useUserStore = create<UserState>()(
       },
 
       resetToken() {
+        // 丢弃在途请求引用，避免清会话后的调用方复用旧请求（其结果可能属于已失效会话）
+        userInfoPromise = null
         set({ token: '', userInfo: EMPTY_USER })
       },
     }),

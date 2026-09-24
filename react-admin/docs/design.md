@@ -40,7 +40,7 @@ react-admin 是 React 后台管理**范本**（react-admin-template）：与 vue
 | react-router              | ^8.4                | 路由（v7 起合并 react-router-dom）                         |
 | @tanstack/react-query     | ^5.103              | 服务端状态（devtools 面板由 VITE_APP_ENABLE_DEVTOOLS 控制） |
 | zustand                   | ^5.0                | 全局状态（persist 内置）                                   |
-| axios / dayjs / nprogress | ^1.7 / ^1.11 / ^0.2 | HTTP / 日期 / 进度条（同 vue3-admin）                      |
+| axios / dayjs             | ^1.7 / ^1.11        | HTTP / 日期（同 vue3-admin）                               |
 | jsencrypt + node-forge    | ^3.5 / ^1.4         | 改密 RSA / AES 工具（同 vue3-admin）                       |
 
 开发依赖：
@@ -112,7 +112,7 @@ react-admin/
 │   │   ├── index.ts           # persist storage key 命名空间（react-admin:${storeId}）
 │   │   └── modules/           # user.ts / permission.ts / app.ts
 │   ├── styles/                # theme.css（antd token 基准）/ tailwind.css（@theme 映射）/ index.css（聚合）
-│   ├── types/                 # global.d.ts（ApiResponse / PaginatedData）/ vite-env.d.ts / nprogress.d.ts / node-forge.d.ts
+│   ├── types/                 # global.d.ts（ApiResponse / PaginatedData）/ vite-env.d.ts / node-forge.d.ts
 │   ├── utils/
 │   │   ├── http/              # index.ts / apiHelpers.ts / error.ts
 │   │   └── dayjs.ts / encrypt.ts / feedback.ts / validate.ts / file.ts
@@ -154,7 +154,6 @@ react-admin/
    - 失败 → resetToken + resetRoutes → 跳 login（对齐 vue3-admin 防守卫 reject 白屏的策略）
 3. `permissionStore.routes` 由后端菜单树收集允许路径过滤 `asyncRoutes` 生成，`route.handle` 携带 title/icon
 4. logout / 401：清 store + 跳 login；`useRoutes` 状态驱动天然支持路由增删，无需 addRoute 等价物
-5. NProgress：AuthGuard 异步段手动 start/done；路由切换由 location effect 收尾
 
 非组件上下文（axios 401）跳转经 `router/navigate.ts` 桥（由 `<NavigateBridge/>` 挂载时注入 useNavigate 引用）。
 

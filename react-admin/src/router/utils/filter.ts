@@ -40,6 +40,24 @@ export function findMenuTrail(menuTree: MenuTreeNode[], path: string): MenuTreeN
   return walk(menuTree, []) ?? []
 }
 
+/**
+ * 按 pathname 在路由表中查找叶子路由（逐段下钻 children）。
+ * declarative mode（useRoutes）无 useMatches（data router 专属 API），
+ * document.title 等路由元信息消费以「路由表 + pathname 匹配」替代。
+ */
+export function findRouteByPathname(routes: RouteObject[], pathname: string): RouteObject | undefined {
+  const segments = pathname.split('/').filter(Boolean)
+  let pool = routes
+  let leaf: RouteObject | undefined
+  for (const segment of segments) {
+    const match = pool.find(route => route.path === segment)
+    if (!match) return undefined
+    leaf = match
+    pool = match.children ?? []
+  }
+  return leaf
+}
+
 /** 首个可见菜单的 path（isMenuShow === false 的跳过，优先下钻子级） */
 export function getFirstVisiblePath(menuTree: MenuTreeNode[]): string | null {
   for (const node of menuTree) {

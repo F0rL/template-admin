@@ -2,11 +2,12 @@
 
 - 状态：已接受
 - 日期：2026-09-23
+- 修订：2026-09-24 移除 NProgress（见决策）
 - 关联：ADR-0004、ADR-0006
 
 ## 背景
 
-路由需求与 vue3-admin 对齐：后端菜单过滤本地 `asyncRoutes` + 动态注册 + 登录守卫 + NProgress。用户访谈第一轮明确选择 React Router 8（v8 为当前主线，ESM-only，要求 Vite 7+ / React 19+，v7 的非破坏演进）。
+路由需求与 vue3-admin 对齐：后端菜单过滤本地 `asyncRoutes` + 动态注册 + 登录守卫 + NProgress（初版要求，后经修订移除）。用户访谈第一轮明确选择 React Router 8（v8 为当前主线，ESM-only，要求 Vite 7+ / React 19+，v7 的非破坏演进）。
 
 ## 决策
 
@@ -14,7 +15,7 @@
 - 路由分两层：`constantRoutes`（login / error / catchAll，静态）+ 布局路由 `{ path: '/', element: <AuthGuard><DefaultLayout/></AuthGuard>, children: permissionStore.routes }`——**动态子路由由 permission store 状态派生**。
 - `AuthGuard` 组件承担 vue-router `beforeEach` 的职责：无 token 重定向登录、已登录访问 /login 回首页、首次进入加载 userInfo + generateRoutes、失败清会话回登录。
 - 非组件上下文（axios 401）经 `router/navigate.ts` 桥跳转：`<NavigateBridge/>` 挂载时注入 `useNavigate` 引用。
-- NProgress：AuthGuard 异步段手动 start/done；路由切换由 location effect 收尾。
+- ~~NProgress~~（2026-09-24 移除）：declarative mode 下切换期的 lazy 挂起包在 transition 中（保留旧页、不渲染 fallback），React 层无法感知 pending，进度条只能覆盖首载、价值有限；切换反馈由 DefaultLayout 的 ViewTransition 动画承担。依赖与类型声明一并移除。
 - 页面标题/图标置于 `route.handle`（RR8 扩展点，对应 vue-router 的 `meta`）。
 
 ## 理由
@@ -26,7 +27,7 @@
 ## 后果
 
 - 不使用 RR data APIs（loader / action / defer / `useNavigation`）。
-- 动态路由的挂载时机取决于 store 状态更新，AuthGuard 需保证首载期间渲染 `null`（等价 NProgress + 空白帧）。
+- 动态路由的挂载时机取决于 store 状态更新，AuthGuard 需保证首载期间渲染 `null`（空白帧）。
 
 ## 被否决的备选
 

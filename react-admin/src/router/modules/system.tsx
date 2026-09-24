@@ -3,7 +3,8 @@ import type { RouteObject } from 'react-router'
 
 /**
  * system 模块路由。
- * path 与后端菜单 path 一致（无前导斜杠），由 permission store 按菜单权限过滤后挂载。
+ * path 与后端菜单 path 一致（无前导斜杠），由 permission store 按菜单权限过滤后挂载；
+ * handle.title 由 DefaultLayout 按 pathname 匹配路由表读取写入 document.title。
  * declarative mode（useRoutes）不支持 route.lazy，用 React.lazy 分包。
  */
 const UserList = lazy(() => import('@/views/system/user/index'))

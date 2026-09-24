@@ -42,7 +42,6 @@ export default defineConfig(({ mode }) => {
         'antd',
         'dayjs',
         'axios',
-        'nprogress',
         'echarts/core',
         'echarts/charts',
         'echarts/components',

@@ -1,6 +1,5 @@
 import { useEffect, type ReactNode } from 'react'
 import { Navigate, useLocation } from 'react-router'
-import NProgress from 'nprogress'
 import { useUserStore } from '@/stores/modules/user'
 import { usePermissionStore } from '@/stores/modules/permission'
 import { navigate } from './navigate'
@@ -12,7 +11,6 @@ import { navigate } from './navigate'
  *   （菜单就绪后 store 更新触发 re-render，useRoutes 重新匹配目标路径）
  * - 加载失败 → 清会话回登录页（避免守卫异常白屏）
  * 白名单（/login、/error）由路由结构保证不经此守卫。
- * NProgress：受保护导航在 location 变化时 start，路由就绪渲染后 done。
  */
 export function AuthGuard({ children }: { children: ReactNode }) {
   const location = useLocation()
@@ -24,7 +22,6 @@ export function AuthGuard({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     if (!needLoad) return
-    NProgress.start()
     void (async () => {
       try {
         // id 由后端生成且非空，作为用户信息已加载的可靠标记
@@ -36,16 +33,10 @@ export function AuthGuard({ children }: { children: ReactNode }) {
         // 用户信息 / 动态路由加载失败（鉴权失效、网络异常等）：清会话回登录页
         useUserStore.getState().resetToken()
         usePermissionStore.getState().resetRoutes()
-        NProgress.done()
         navigate(`/login?redirect=${location.pathname}`, { replace: true })
       }
     })()
   }, [needLoad, location.pathname])
-
-  useEffect(() => {
-    // 路由就绪渲染子级后收尾进度条（对应 vue3-admin afterEach 的 NProgress.done）
-    if (!needRedirectLogin && !needLoad) NProgress.done()
-  }, [needRedirectLogin, needLoad, location.pathname])
 
   if (needRedirectLogin) {
     return <Navigate to={`/login?redirect=${location.pathname}`} replace />
