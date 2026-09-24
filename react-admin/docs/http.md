@@ -15,12 +15,12 @@
 
 ## 错误分类处理
 
-| 类别 | 触发条件 | 处理方 |
-| ---- | -------- | ------ |
-| 业务错误 | HTTP 200 且 `success === false` | 响应拦截器 → `handleBusinessError` → reject `BusinessError` |
-| HTTP 状态码错误 | HTTP 非 200 | `handleNetworkError` → 按状态码消息表 toast |
-| 网络异常 | 无响应（断网/超时） | `handleNetworkError` → 「网络连接失败」toast |
-| 请求取消 | signal abort（组件卸载） | `axios.isCancel` 静默，不弹 toast |
+| 类别            | 触发条件                        | 处理方                                                      |
+| --------------- | ------------------------------- | ----------------------------------------------------------- |
+| 业务错误        | HTTP 200 且 `success === false` | 响应拦截器 → `handleBusinessError` → reject `BusinessError` |
+| HTTP 状态码错误 | HTTP 非 200                     | `handleNetworkError` → 按状态码消息表 toast                 |
+| 网络异常        | 无响应（断网/超时）             | `handleNetworkError` → 「网络连接失败」toast                |
+| 请求取消        | signal abort（组件卸载）        | `axios.isCancel` 静默，不弹 toast                           |
 
 - 业务错误（`success === false`）由响应拦截器统一处理：`code === 401` 且不在 `/login` 路由时走 `handleUnauthorized`；其余 `message.error(msg)`（`res.errors` 有内容时拼接详情）。随后以 `BusinessError` reject，调用方无需重复判断。
 - `handleNetworkError` 见到 `BusinessError` 直接放行（避免重复 toast）；仅负责副作用，调用方（拦截器）始终 reject，让业务层感知失败以关闭 loading 等。

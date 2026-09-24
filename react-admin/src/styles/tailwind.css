@@ -3,36 +3,102 @@
 /* =============================================
  * Tailwind v4 Theme Integration
  * ---------------------------------------------
- * 将 antd 6 运行时 CSS 变量（cssVar 模式，由 ConfigProvider
- * theme.token 生成）映射为 Tailwind 工具类。使用 var() 引用
- * （非内联值）保证 bg-primary 等工具类与 antd 主题实时同步。
+ * 主题 token 唯一来源是 src/theme/index.ts（ConfigProvider theme）；
+ * antd 6 cssVar 模式把 token 下发为运行时 CSS 变量（--ant-*）。
+ * 本文件只做映射，且一律用 var() 引用、不写字面色值，
+ * 因此改主题只需改 src/theme/index.ts 一处，工具类自动跟随。
  *
- * antd 6 不再用 :root 覆盖设计变量（与 vue3-admin 的
- * theme.css 方案不同），主题源头在 App.tsx 的 ConfigProvider。
+ * 三段结构：
+ *   1. 语义映射层：text / bg / border / fill / status 五类，
+ *      新增用色优先在此挑选，不要另加变量；
+ *   2. 默认调色板覆盖：让 Tailwind 原生类名（bg-white / text-gray-500 等）
+ *      直接跟随主题，避免业务代码出现不随主题变化的硬编码色；
+ *   3. 自定义 utility 与动画。
  *
  * 生成的工具类示例：
- *   bg-primary / text-primary / border-primary
- *   bg-primary-bg / bg-danger / text-danger ...
+ *   bg-primary / text-primary / border-primary / bg-primary-bg
+ *   text-text-primary / bg-bg-container / border-border-lighter
+ *   bg-danger / text-danger / bg-fill-light ...
  * ============================================= */
-@theme {
-  /* Primary */
+/* 必须用 @theme inline：这些值引用的是 antd 下发在组件根（.css-var-* 类）上的
+   --ant-*。若用普通 @theme，Tailwind 会生成 `:root { --color-x: var(--ant-x) }`
+   的中间变量，而 :root 上取不到 --ant-*，该变量即成为「保证无效值」并向下继承，
+   导致工具类整条声明失效（如 border 回退为 currentColor 显示黑色）。 */
+@theme inline {
+  /* ===== Primary ===== */
   --color-primary: var(--ant-color-primary);
+  --color-primary-hover: var(--ant-color-primary-hover);
+  --color-primary-active: var(--ant-color-primary-active);
   --color-primary-bg: var(--ant-color-primary-bg);
+  --color-primary-border: var(--ant-color-primary-border);
 
-  /* Text */
-  --color-text-primary: var(--ant-text-color);
-  --color-text-secondary: var(--ant-text-color-secondary);
-  --color-text-placeholder: var(--ant-text-color-placeholder);
+  /* ===== Text ===== */
+  --color-text-primary: var(--ant-color-text);
+  --color-text-secondary: var(--ant-color-text-secondary);
+  --color-text-tertiary: var(--ant-color-text-tertiary);
+  --color-text-placeholder: var(--ant-color-text-placeholder);
+  --color-text-disabled: var(--ant-color-text-disabled);
+  /* 反白文字：用于主色/深色实底之上 */
+  --color-text-inverse: var(--ant-color-text-light-solid);
 
-  /* Fill */
+  /* ===== Background ===== */
+  --color-bg-container: var(--ant-color-bg-container);
+  --color-bg-layout: var(--ant-color-bg-layout);
+  --color-bg-elevated: var(--ant-color-bg-elevated);
+
+  /* ===== Fill ===== */
+  --color-fill: var(--ant-color-fill);
   --color-fill-light: var(--ant-color-fill-tertiary);
+  --color-fill-lighter: var(--ant-color-fill-quaternary);
 
-  /* Border */
+  /* ===== Border ===== */
+  --color-border: var(--ant-color-border);
   --color-border-lighter: var(--ant-color-border-secondary);
+  --color-split: var(--ant-color-split);
 
-  /* Danger */
+  /* ===== Status ===== */
+  --color-success: var(--ant-color-success);
+  --color-success-bg: var(--ant-color-success-bg);
+  --color-warning: var(--ant-color-warning);
+  --color-warning-bg: var(--ant-color-warning-bg);
   --color-danger: var(--ant-color-error);
   --color-danger-bg: var(--ant-color-error-bg);
+  --color-info: var(--ant-color-info);
+  --color-info-bg: var(--ant-color-info-bg);
+}
+
+/* =============================================
+ * 默认调色板覆盖
+ * ---------------------------------------------
+ * 把业务已使用的 Tailwind 原生色阶指向 antd 语义 token，
+ * 使既有类名随主题切换（含暗色算法）。只覆盖实际用到的档位，
+ * 新增用色请使用上面的语义类名，不要依赖这里的色阶。
+ * ============================================= */
+@theme inline {
+  /* 中性：容器底 / 边框 / 文字梯度（gray 与 slate 同属中性色，映射到同一组 token） */
+  --color-white: var(--ant-color-bg-container);
+  --color-gray-100: var(--ant-color-border-secondary);
+  --color-gray-400: var(--ant-color-text-quaternary);
+  --color-gray-500: var(--ant-color-text-tertiary);
+  --color-gray-600: var(--ant-color-text-secondary);
+  --color-gray-700: var(--ant-color-text);
+  --color-gray-900: var(--ant-color-text);
+
+  --color-slate-50: var(--ant-color-fill-quaternary);
+  --color-slate-100: var(--ant-color-fill-tertiary);
+  --color-slate-200: var(--ant-color-border-secondary);
+  --color-slate-400: var(--ant-color-text-quaternary);
+  --color-slate-500: var(--ant-color-text-tertiary);
+  --color-slate-700: var(--ant-color-text);
+  --color-slate-900: var(--ant-color-text);
+
+  /* 品牌蓝：登录页品牌色与装饰色跟随主色 */
+  --color-blue-50: var(--ant-color-primary-bg);
+  --color-blue-500: var(--ant-color-primary-hover);
+  --color-blue-600: var(--ant-color-primary);
+  --color-blue-700: var(--ant-color-primary-active);
+  --color-indigo-600: var(--ant-color-primary-active);
+  --color-cyan-400: var(--ant-color-primary);
 }
 
 /* =============================================
@@ -48,10 +114,10 @@
   height: calc(100vh - 3.5rem - 2rem);
 }
 
-/* 内容块卡片：圆角 + 白色背景 + 内边距 + 轻阴影 */
+/* 内容块卡片：圆角 + 容器背景 + 内边距 + 轻阴影 */
 @utility panel-card {
   border-radius: 0.25rem;
-  background-color: #fff;
+  background-color: var(--ant-color-bg-container);
   padding: 1.25rem;
   box-shadow: var(--shadow-sm);
 }

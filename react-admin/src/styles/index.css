@@ -2,7 +2,7 @@
  * Global Styles — 聚合入口
  * ---------------------------------------------
  * Tailwind（含 @theme token 映射与自定义 utility）见 tailwind.css；
- * antd 组件主题经 App.tsx 的 ConfigProvider theme.token 配置，
+ * antd 组件主题经 src/theme/index.ts 的 antdTheme 配置，
  * antd 6 cssVar 模式自动下发运行时 CSS 变量，无需 :root 覆盖。
  *
  * 新增全局样式时按主题新建文件并在此 @import，

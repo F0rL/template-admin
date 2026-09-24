@@ -3,6 +3,8 @@
  * ---------------------------------------------
  * ConfigProvider theme token 无法覆盖的少量样式
  * （如选中项右侧边条）与纯 CSS 图形放此文件。
+ * 色值一律引用 antd 运行时变量（--ant-*），不写字面色值，
+ * 保证随 src/theme/index.ts 的主题切换。
  * ============================================= */
 
 /* Sidebar 菜单选中态：右侧 3px 主色边（对齐 vue3-admin el-menu 定制） */
@@ -22,9 +24,9 @@
   width: 100%;
   border-radius: 16px;
   background:
-    linear-gradient(90deg, #0f172a 10px, transparent 10px),
-    linear-gradient(#0f172a 10px, transparent 10px),
-    linear-gradient(135deg, #1e293b 0%, #2563eb 100%);
+    linear-gradient(90deg, var(--ant-color-text) 10px, transparent 10px),
+    linear-gradient(var(--ant-color-text) 10px, transparent 10px),
+    linear-gradient(135deg, var(--ant-color-text) 0%, var(--ant-color-primary) 100%);
   background-position:
     0 0,
     0 0,
@@ -33,7 +35,7 @@
     22px 22px,
     22px 22px,
     100% 100%;
-  box-shadow: inset 0 0 0 14px #fff;
+  box-shadow: inset 0 0 0 14px var(--ant-color-bg-container);
 }
 
 .qrcode-placeholder::before {
@@ -44,8 +46,8 @@
   width: 48px;
   height: 48px;
   border-radius: 12px;
-  border: 8px solid #fff;
-  background: rgba(255, 255, 255, 0.4);
+  border: 8px solid var(--ant-color-bg-container);
+  background: color-mix(in srgb, var(--ant-color-bg-container) 40%, transparent);
 }
 
 .qrcode-placeholder::after {
@@ -56,6 +58,56 @@
   width: 48px;
   height: 48px;
   border-radius: 12px;
-  border: 8px solid #fff;
-  background: rgba(255, 255, 255, 0.4);
+  border: 8px solid var(--ant-color-bg-container);
+  background: color-mix(in srgb, var(--ant-color-bg-container) 40%, transparent);
+}
+
+/* =============================================
+ * ProTable 满高模式（autoHeight）
+ * ---------------------------------------------
+ * rc-table 仅在 scroll.y 存在时才拆出独立的 .ant-table-header / .ant-table-body；
+ * 这里把容器链改为 flex 列，使表体占满剩余高度、表头固定、表体内部滚动。
+ * 表体上的 overflow-y / max-height 由 rc-table 以内联样式下发（始终 scroll +
+ * maxHeight:100%），故用 !important 覆盖为按需滚动。
+ * ============================================= */
+.pro-table-auto.ant-table-wrapper {
+  display: flex;
+  flex: 1 1 auto;
+  min-height: 0;
+  flex-direction: column;
+}
+
+/* 中间包裹层（antd Table 内置 Spin：.ant-spin > .ant-spin-container，或嵌套态的
+   .ant-spin-nested-loading）必须透传 flex 高度，否则 min-height:auto 会按内容撑高 */
+.pro-table-auto .ant-spin,
+.pro-table-auto .ant-spin-nested-loading,
+.pro-table-auto .ant-spin-container {
+  display: flex;
+  flex: 1 1 auto;
+  min-height: 0;
+  flex-direction: column;
+}
+
+.pro-table-auto .ant-table {
+  display: flex;
+  flex: 1 1 auto;
+  min-height: 0;
+  flex-direction: column;
+}
+
+.pro-table-auto .ant-table-container {
+  display: flex;
+  flex: 1 1 auto;
+  min-height: 0;
+  flex-direction: column;
+}
+
+.pro-table-auto .ant-table-header {
+  flex: none;
+}
+
+.pro-table-auto .ant-table-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto !important;
 }

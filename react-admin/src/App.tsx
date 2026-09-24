@@ -6,14 +6,8 @@ import { config } from '@/config'
 import { queryClient } from '@/lib/queryClient'
 import { FeedbackBridge } from '@/components/FeedbackBridge'
 import { LoadingHost } from '@/components/LoadingHost'
+import { antdTheme } from '@/theme'
 import RouterRoot from '@/router'
-
-/** 主题 token 唯一来源（antd 6 CSS 变量模式），主色对齐 vue3-admin theme.css */
-const antdTheme = {
-  token: {
-    colorPrimary: '#2563eb',
-  },
-}
 
 export default function App() {
   return (

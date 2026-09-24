@@ -13,7 +13,7 @@ const LoginPage = lazy(() => import('@/views/login/index'))
 const ErrorPage = lazy(() => import('@/views/result/error'))
 
 /**
- * 静态路由：登录页（游客守卫）、错误页、404 兜底。
+ * 静态路由：登录页（游客守卫）、错误页。
  * 动态权限路由见 asyncRoutes.ts（由 permission store 过滤后经 AppRoutes 挂载）。
  */
 const constantRoutes: RouteObject[] = [
@@ -27,10 +27,6 @@ const constantRoutes: RouteObject[] = [
   },
   {
     path: '/error',
-    element: <ErrorPage />,
-  },
-  {
-    path: '*',
     element: <ErrorPage />,
   },
 ]
@@ -56,7 +52,7 @@ function NavigateBridge() {
 }
 
 /**
- * 全局路由表：constantRoutes + Layout 守卫路由。
+ * 全局路由表：constantRoutes + Layout 守卫路由 + 404 兜底。
  * children = '/' 索引重定向（firstPath）+ 权限路由（状态驱动，加载完成后才匹配）。
  * Suspense 承接静态页（登录/错误）的 React.lazy 挂起；
  * 权限页的挂起由 DefaultLayout 内容区就近承接，避免整布局闪烁。
@@ -81,6 +77,17 @@ export function AppRoutes() {
             ...(firstPath ? [{ index: true, element: <Navigate to={`/${firstPath}`} replace /> }] : []),
             ...permissionRoutes,
           ],
+        },
+        {
+          // 404 兜底，兼作深链刷新的守卫入口：刷新时权限路由尚未生成（routes 为空），
+          // 深链只能命中 splat 分支；由 AuthGuard 触发菜单加载，完成后 useRoutes 重匹配，
+          // 权限路由分支得分高于 splat 故优先命中。未登录访问未知路径 → 登录页。
+          path: '*',
+          element: (
+            <AuthGuard>
+              <ErrorPage />
+            </AuthGuard>
+          ),
         },
       ])}
     </Suspense>

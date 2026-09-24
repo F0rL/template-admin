@@ -43,7 +43,16 @@ export default defineConfig(({ mode }) => {
     },
     // 预构建大型依赖，加速冷启动与 HMR
     optimizeDeps: {
-      include: ['antd', 'dayjs', 'axios', 'nprogress'],
+      include: [
+        'antd',
+        'dayjs',
+        'axios',
+        'nprogress',
+        'echarts/core',
+        'echarts/charts',
+        'echarts/components',
+        'echarts/renderers',
+      ],
     },
     build: {
       // 产物兼容目标：类字段等语法原生支持（Chrome 94+ / Safari 15.4+），避免降级
@@ -69,6 +78,8 @@ export default defineConfig(({ mode }) => {
               // react-query 独立缓存：@tanstack 自开发版节奏，与 react 生态不同步
               { name: 'react-query', test: /[\\/]node_modules[\\/]@tanstack[\\/]/ },
               { name: 'axios', test: /[\\/]node_modules[\\/]axios[\\/]/ },
+              // echarts + 其渲染引擎 zrender 独立分包（仅 dashboard 使用，随页面懒加载）
+              { name: 'chart', test: /[\\/]node_modules[\\/](echarts|zrender)[\\/]/ },
               { name: 'crypto', test: /[\\/]node_modules[\\/](node-forge|jsencrypt)[\\/]/ },
             ],
           },

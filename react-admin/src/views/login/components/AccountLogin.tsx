@@ -67,68 +67,71 @@ export default function AccountLogin() {
   const captchaImg = captcha ? `data:image/png;base64,${captcha.base64}` : ''
 
   return (
-    <Form<AccountLoginValues> form={form} size="large" onFinish={handleFinish} requiredMark={false}>
-      <Form.Item
-        name="username"
-        rules={[
-          { required: true, message: '请输入用户名' },
-          { min: 3, message: '用户名至少 3 位' },
-        ]}
+    <div className="mt-6">
+      <Form<AccountLoginValues>
+        form={form}
+        size="large"
+        onFinish={handleFinish}
+        requiredMark={false}
       >
-        <Input
-          prefix={<UserOutlined className="text-gray-400" />}
-          placeholder="用户名"
-          autoComplete="username"
-        />
-      </Form.Item>
-      <Form.Item
-        name="password"
-        rules={[
-          { required: true, message: '请输入密码' },
-          { min: 6, message: '密码至少 6 位' },
-        ]}
-      >
-        <Input.Password
-          prefix={<LockOutlined className="text-gray-400" />}
-          placeholder="密码"
-          autoComplete="current-password"
-        />
-      </Form.Item>
-      <div className="mb-6 flex items-center gap-2">
         <Form.Item
-          className="mb-0! min-w-0 flex-1"
-          name="captchaCode"
-          rules={[{ required: true, message: '请输入验证码' }]}
+          name="username"
+          rules={[
+            { required: true, message: '请输入账号' },
+            { min: 3, message: '账号长度不能少于 3 位' },
+          ]}
         >
-          <Input.OTP
-            length={4}
-            formatter={value => value.replace(/[^0-9a-zA-Z]/g, '')}
-            onChange={value => {
-              // 输满 4 位自动提交（对齐 vue3-admin 的 @finish 行为）
-              if (value.length === 4) form.submit()
-            }}
+          <Input
+            prefix={<UserOutlined className="text-gray-400" />}
+            placeholder="请输入账号"
+            autoComplete="username"
           />
         </Form.Item>
-        {captchaImg ? (
-          <img
-            src={captchaImg}
-            alt="验证码"
-            title="点击刷新"
-            className="h-10 w-28 shrink-0 cursor-pointer rounded-md"
-            onClick={refreshCaptcha}
+        <Form.Item
+          name="password"
+          rules={[
+            { required: true, message: '请输入密码' },
+            { min: 6, message: '密码长度不能少于 6 位' },
+          ]}
+        >
+          <Input.Password
+            prefix={<LockOutlined className="text-gray-400" />}
+            placeholder="请输入密码"
+            autoComplete="current-password"
           />
-        ) : (
+        </Form.Item>
+        <div className="flex gap-3">
+          <Form.Item
+            className="mb-0! min-w-0 flex-1"
+            name="captchaCode"
+            rules={[{ required: true, message: '请输入验证码' }]}
+          >
+            <Input.OTP
+              length={4}
+              formatter={value => value.replace(/[^0-9a-zA-Z]/g, '')}
+              onChange={value => {
+                // 输满 4 位自动提交（对齐 vue3-admin 的 @finish 行为）
+                if (value.length === 4) form.submit()
+              }}
+            />
+          </Form.Item>
           <div
-            className="flex h-10 w-28 shrink-0 cursor-pointer items-center justify-center rounded-md bg-gray-100 text-xs text-gray-400"
+            className="h-10 w-28 shrink-0 cursor-pointer overflow-hidden rounded-lg border border-slate-200"
             onClick={refreshCaptcha}
           >
-            点击加载
+            {captchaImg ? (
+              <img src={captchaImg} alt="验证码" className="h-full w-full object-cover" />
+            ) : (
+              <div className="flex h-full w-full items-center justify-center bg-slate-100 text-xs text-slate-400">
+                加载中
+              </div>
+            )}
           </div>
-        )}
-      </div>
-      <Button className="mt-4" type="primary" htmlType="submit" block loading={submitting}>
-        登录
-      </Button>
-    </Form>
+        </div>
+        <Button className="mt-8" type="primary" htmlType="submit" block loading={submitting}>
+          登&nbsp;&nbsp;录
+        </Button>
+      </Form>
+    </div>
   )
 }

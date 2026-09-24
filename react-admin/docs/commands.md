@@ -15,6 +15,8 @@ pnpm format:check  # Prettier 仅检查
 
 仅允许使用 `pnpm`（`packageManager` + `devEngines.packageManager` 强制，版本 >=10 <11）。
 
+如需使用浏览器验证，先访问已配置地址`http://localhost:4001/react-admin/`查看是否正常，没有再启动服务，完成验证后，关闭测试服务，避免占用端口。
+
 ## 验证
 
 代码编写完成后必须同时通过 `pnpm lint` 和 `pnpm typecheck`。`lint` 管风格和语法（带 `--fix` 自动修复），`typecheck` 管类型；如需格式化再跑 `pnpm format`。

@@ -29,7 +29,10 @@ export default function Header() {
   const [pwdOpen, setPwdOpen] = useState(false)
 
   /** 面包屑：当前路径在菜单树中的祖先链 */
-  const trail = useMemo(() => findMenuTrail(menuData, location.pathname), [menuData, location.pathname])
+  const trail = useMemo(
+    () => findMenuTrail(menuData, location.pathname),
+    [menuData, location.pathname],
+  )
 
   const userMenuItems: MenuProps['items'] = [
     { key: 'updatePwd', label: '修改密码' },
@@ -60,17 +63,21 @@ export default function Header() {
           type="button"
           onClick={toggleSidebar}
           title={sidebarOpened ? '收起侧边栏' : '展开侧边栏'}
-          className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-md text-gray-600 transition-colors hover:bg-gray-100"
+          className="hover:bg-fill-light flex h-8 w-8 cursor-pointer items-center justify-center rounded-md text-gray-600 transition-colors"
         >
           {sidebarOpened ? <MenuFoldOutlined /> : <MenuUnfoldOutlined />}
         </button>
         <Breadcrumb items={trail.map(item => ({ key: item.id, title: item.title }))} />
       </div>
 
-      <Dropdown menu={{ items: userMenuItems, onClick: handleUserMenuClick }} placement="bottomRight" trigger={['click']}>
+      <Dropdown
+        menu={{ items: userMenuItems, onClick: handleUserMenuClick }}
+        placement="bottomRight"
+        trigger={['click']}
+      >
         <button
           type="button"
-          className="flex cursor-pointer items-center gap-2 rounded-full p-1 transition-colors hover:bg-gray-100"
+          className="hover:bg-fill-light flex cursor-pointer items-center gap-2 rounded-full p-1 transition-colors"
         >
           <Avatar
             size={32}

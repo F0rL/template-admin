@@ -20,7 +20,7 @@
 
 ## antd 6 惯用法
 
-- 主题 token（主色等）唯一来源在 `App.tsx` 的 `ConfigProvider`。
+- 主题 token（主色等）唯一来源在 `src/theme/index.ts` 的 `antdTheme`（App.tsx 的 `ConfigProvider theme` 消费），改主题只改此文件。
 - message / notification / modal / 全屏 loading 必须经 `@/utils/feedback`（App 上下文实例，主题与 locale 一致），禁止 antd 静态方法。
 - Modal + Form 组合：受控 `open` + `destroyOnHidden` + `footer={null}`（提交按钮放 Form 内 htmlType submit），避免懒渲染下 useForm 连接时序问题。
 - 留意 antd 6 弃用 API 迁移（如 `maskClosable` → `mask={{ closable: false }}`），console 警告需清零。
@@ -29,6 +29,8 @@
 ## 样式
 
 - 布局与排版优先 Tailwind 4 原子类；antd 主题相关的少量覆盖写 `src/styles/components.css`（类名前缀如 `.sidebar-menu`）。
+- 用色单一来源：CSS 里**不写字面色值**，一律引用 `--ant-*`（需要透明度用 `color-mix()`）；工具类优先用语义类名（`text-text-secondary` / `bg-bg-container` / `border-border-lighter` / `bg-danger` 等），不要新引入 Tailwind 色阶。语义层与默认调色板覆盖见 `src/styles/tailwind.css`，决策见 ADR-0007。
+- 映射 antd 变量的 `@theme` 块**必须带 `inline`**（`@theme inline`）：`--ant-*` 定义在 antd 组件根而非 `:root`，普通 `@theme` 的中间变量会在 `:root` 解析失败并向下继承为无效值，导致工具类失效（border 变黑）。
 - 不新增 SCSS / CSS Modules。
 
 ## 配置与环境变量

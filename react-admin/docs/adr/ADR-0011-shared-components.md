@@ -20,6 +20,16 @@ vue3-admin 的 ProTable 是对 el-table 的配置驱动泛型封装（valueEnum 
 - **useDialogForm**：弹窗表单 hook（open / close / pending / onSuccess 回调），承接 vue3-admin composable 的职责。
 - **落地节奏：Phase 2 随首个模板页一起交付**——先实现真实页面，再以页面需求校准组件边界（先页面后组件，防止无人使用的抽象）。`docs/components.md` 与 `docs/page-conventions.md` 同步于 Phase 2 落地。
 
+## 落地结果（Phase 2，2026-09）
+
+首个模板页定为 `system/user`（账户管理），据此交付：
+
+- **ProTable**（`src/components/ProTable/index.tsx`）：只落地 valueEnum 字典（含 `type: 'tag'`）、`autoHeight` 满高、默认 `rowKey="id"` 三项；**未做** `selection` / `expand` 列语法糖——页面直接使用 antd 原生 `rowSelection`，符合「薄封装」边界。
+- **满高实现修正**：`autoHeight` 不靠 antd `sticky`，而是 `scroll={{ y: '100%' }}` 触发 rc-table 拆出独立表头/表体，再以 `src/styles/components.css` 的 flex 链撑满（`.ant-spin` 包裹层必须一并透传，否则按内容撑高失效）；分页作为表格外的独立节点渲染，才能贴底。
+- **useDialogForm**（`src/hooks/useDialogForm.ts`）：接口为 `{ form, isEdit, saveMutation, pending }`；弹窗开关与编辑行由调用方 props 受控（React 惯用法，不反向暴露 open/close 命令），打开时重置由调用方以递增 `key` 重挂载实现。
+- **SelectIcon 未落地**：账户页无使用场景，推迟到菜单管理页（避免盲封）。
+- 落地后同步：`docs/components.md`、`docs/page-conventions.md`、`docs/{architecture,data-layer,mock,design}.md`、`AGENTS.md` 索引。
+
 ## 理由
 
 - antd 6 已内置 el-table 需要封装才能获得的大部分能力，薄封装即够。

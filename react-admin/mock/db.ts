@@ -1,10 +1,10 @@
 /**
- * Mock 统一数据源（Phase 1 最小集）
+ * Mock 统一数据源
  * ---------------------------------------------
- * 所有 handler 共享同一份内存数据。Phase 1 仅覆盖登录链路：
- * 验证码 / 用户信息 / 权限菜单树（path 与 src/router 的 asyncRoutes 对齐，
- * icon 键名与 src/icons 的 iconMap 对齐，均无前导斜杠）。
- * 系统管理域数据（用户/角色/菜单/组织/日志）随 Phase 2/3 页面补齐。
+ * 所有 handler 共享同一份内存数据。覆盖登录链路（验证码 / 用户信息 /
+ * 权限菜单树，path 与 src/router 的 asyncRoutes 对齐，icon 键名与
+ * src/icons 的 iconMap 对齐，均无前导斜杠）与系统管理域（账户 / 角色）。
+ * 其余系统管理域数据（菜单/组织/日志）随 Phase 3 页面补齐。
  */
 
 // ==================== 登录验证码 ====================
@@ -40,7 +40,10 @@ export interface MockMenuNode {
   icon?: string
   path?: string
   status?: number
+  order?: number
   isMenuShow?: boolean
+  /** 系统内置菜单（不可删除） */
+  _disabled?: boolean
   children?: MockMenuNode[]
 }
 
@@ -51,20 +54,238 @@ export const userMenus: MockMenuNode[] = [
     path: 'dashboard',
     icon: 'ri:home-4-line',
     status: 1,
+    order: 1,
     isMenuShow: true,
+    _disabled: false,
   },
   {
     id: '2',
     title: '系统管理',
     icon: 'ri:settings-3-line',
     status: 1,
+    order: 2,
     isMenuShow: true,
+    _disabled: true,
     children: [
-      { id: '2-1', title: '账户管理', path: 'sys-user-list', icon: 'ri:user-line', status: 1, isMenuShow: true },
-      { id: '2-2', title: '角色管理', path: 'sys-role-list', icon: 'ri:shield-user-line', status: 1, isMenuShow: true },
-      { id: '2-3', title: '菜单管理', path: 'sys-menu-list', icon: 'ri:profile-line', status: 1, isMenuShow: true },
-      { id: '2-4', title: '组织架构', path: 'sys-org-list', icon: 'ri:community-line', status: 1, isMenuShow: true },
-      { id: '2-5', title: '日志管理', path: 'sys-log-list', icon: 'ri:history-line', status: 1, isMenuShow: true },
+      { id: '2-1', title: '账户管理', path: 'sys-user-list', icon: 'ri:user-line', status: 1, order: 1, isMenuShow: true, _disabled: true },
+      { id: '2-2', title: '角色管理', path: 'sys-role-list', icon: 'ri:shield-user-line', status: 1, order: 2, isMenuShow: true, _disabled: true },
+      { id: '2-3', title: '菜单管理', path: 'sys-menu-list', icon: 'ri:profile-line', status: 1, order: 3, isMenuShow: true, _disabled: true },
+      { id: '2-4', title: '组织架构', path: 'sys-org-list', icon: 'ri:community-line', status: 1, order: 4, isMenuShow: true, _disabled: true },
+      { id: '2-5', title: '日志管理', path: 'sys-log-list', icon: 'ri:history-line', status: 1, order: 5, isMenuShow: true, _disabled: true },
     ],
   },
 ]
+
+// ==================== 账户（账户管理页数据源） ====================
+
+/** 头像占位图（内联 SVG，避免依赖外部图片服务） */
+const AVATAR_PLACEHOLDER =
+  'data:image/svg+xml;utf8,' +
+  encodeURIComponent(
+    '<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect width="100" height="100" fill="#c0c4cc"/><text x="50" y="64" font-size="44" text-anchor="middle" fill="#fff">人</text></svg>',
+  )
+
+export interface MockSysUser {
+  id: string
+  userId: string
+  name: string
+  avatar: string
+  /** 1 启用，其它禁用 */
+  status: number
+  roleIds: string[]
+  /** 是否显示行内删除/编辑按钮（系统内置账号为 false） */
+  isDelHandle: boolean
+  /** 是否可操作（可勾选/编辑/删除） */
+  _disabled: boolean
+  /** 企业微信性别：1 男 0 女（组织架构页展示） */
+  gender: 0 | 1
+  /** 职务（组织架构页展示） */
+  position: string
+}
+
+export const sysUsers: MockSysUser[] = [
+  { id: 'admin', userId: 'admin', name: '管理员', avatar: AVATAR_PLACEHOLDER, status: 1, roleIds: ['10086'], isDelHandle: false, _disabled: true, gender: 1, position: '超级管理员' },
+  { id: 'zhangsan', userId: 'zhangsan', name: '张三', avatar: AVATAR_PLACEHOLDER, status: 1, roleIds: ['740000000000000001'], isDelHandle: true, _disabled: true, gender: 1, position: '技术总监' },
+  { id: 'lisi', userId: 'lisi', name: '李四', avatar: AVATAR_PLACEHOLDER, status: 1, roleIds: ['740000000000000002'], isDelHandle: true, _disabled: false, gender: 1, position: '前端工程师' },
+  { id: 'wangwu', userId: 'wangwu', name: '王五', avatar: AVATAR_PLACEHOLDER, status: -1, roleIds: ['740000000000000002'], isDelHandle: true, _disabled: false, gender: 1, position: '市场专员' },
+  { id: 'zhaoliu', userId: 'zhaoliu', name: '赵六', avatar: AVATAR_PLACEHOLDER, status: 1, roleIds: ['740000000000000003'], isDelHandle: true, _disabled: false, gender: 1, position: '渠道经理' },
+  { id: 'sunqi', userId: 'sunqi', name: '孙七', avatar: AVATAR_PLACEHOLDER, status: 1, roleIds: ['740000000000000002'], isDelHandle: true, _disabled: false, gender: 0, position: 'HRBP' },
+  { id: 'zhouba', userId: 'zhouba', name: '周八', avatar: AVATAR_PLACEHOLDER, status: -1, roleIds: ['740000000000000003'], isDelHandle: true, _disabled: false, gender: 0, position: '招聘专员' },
+  { id: 'wujiu', userId: 'wujiu', name: '吴九', avatar: AVATAR_PLACEHOLDER, status: 1, roleIds: ['740000000000000001'], isDelHandle: true, _disabled: false, gender: 0, position: '财务经理' },
+  { id: 'zhengshi', userId: 'zhengshi', name: '郑十', avatar: AVATAR_PLACEHOLDER, status: 1, roleIds: ['740000000000000002'], isDelHandle: true, _disabled: false, gender: 0, position: '会计' },
+  { id: 'liuyi', userId: 'liuyi', name: '刘一', avatar: AVATAR_PLACEHOLDER, status: 1, roleIds: ['740000000000000003'], isDelHandle: true, _disabled: false, gender: 1, position: '后端工程师' },
+  { id: 'chener', userId: 'chener', name: '陈二', avatar: AVATAR_PLACEHOLDER, status: 1, roleIds: ['740000000000000002'], isDelHandle: true, _disabled: false, gender: 1, position: '测试工程师' },
+  { id: 'yangsi', userId: 'yangsi', name: '杨四', avatar: AVATAR_PLACEHOLDER, status: -1, roleIds: ['740000000000000003'], isDelHandle: true, _disabled: false, gender: 0, position: '产品经理' },
+]
+
+// ==================== 组织架构（部门树为规范源，用户可归属多个部门） ====================
+
+export interface MockDept {
+  id: string
+  name: string
+  parentId: string | null
+  /** 部门直属用户 id（对齐 sysUsers.userId） */
+  userIds: string[]
+}
+
+export const depts: MockDept[] = [
+  { id: '1', name: '示例集团', parentId: null, userIds: ['admin'] },
+  { id: '2', name: '研发部', parentId: '1', userIds: ['liuyi', 'chener'] },
+  { id: '3', name: '产品部', parentId: '1', userIds: ['yangsi'] },
+  { id: '4', name: '设计部', parentId: '1', userIds: [] },
+  { id: '5', name: '人力资源部', parentId: '1', userIds: ['sunqi', 'zhouba'] },
+  { id: '6', name: '财务部', parentId: '1', userIds: ['wujiu', 'zhengshi'] },
+  { id: '7', name: '技术部', parentId: '1', userIds: ['zhangsan', 'lisi'] },
+  { id: '8', name: '市场部', parentId: '1', userIds: ['wangwu', 'zhaoliu'] },
+]
+
+/** 固定 mock 手机号（按用户序号生成，保证稳定） */
+export function mobileOf(userId: string): string {
+  const idx = sysUsers.findIndex(u => u.userId === userId)
+  return `138${String(idx + 1).padStart(8, '0')}`
+}
+
+// ==================== 角色 ====================
+
+export interface MockRole {
+  id: string
+  name: string
+  status: number
+  /** 已授权菜单 id 的 JSON 数组字符串（对齐后端 RoleEntity.menuIdsJSON） */
+  menuIdsJSON: string
+}
+
+export const roles: MockRole[] = [
+  {
+    id: '10086',
+    name: '超级管理员组',
+    status: 1,
+    menuIdsJSON: '["1","2","2-1","2-2","2-3","2-4","2-5"]',
+  },
+  { id: '738088897698856960', name: '测试角色', status: 1, menuIdsJSON: '["1"]' },
+  {
+    id: '740000000000000001',
+    name: '系统管理员',
+    status: 1,
+    menuIdsJSON: '["1","2-1","2-2","2-3"]',
+  },
+  { id: '740000000000000002', name: '普通用户', status: 1, menuIdsJSON: '["1"]' },
+  { id: '740000000000000003', name: '访客', status: 0, menuIdsJSON: '["1"]' },
+  { id: '740000000000000004', name: '财务专员', status: 1, menuIdsJSON: '["1"]' },
+  { id: '740000000000000005', name: '人事专员', status: 1, menuIdsJSON: '["1"]' },
+  { id: '740000000000000006', name: '运营专员', status: 0, menuIdsJSON: '["1"]' },
+  { id: '740000000000000007', name: '市场专员', status: 1, menuIdsJSON: '["1"]' },
+  { id: '740000000000000008', name: '客服专员', status: 1, menuIdsJSON: '["1"]' },
+]
+
+export function roleNameOf(id: string): string {
+  return roles.find(r => r.id === id)?.name ?? '未知角色'
+}
+
+// ==================== 日志（模块加载时随机生成一次，进程内稳定） ====================
+
+const LOG_METHODS = ['GET', 'POST', 'PUT', 'DELETE']
+const LOG_ACTIONS = [
+  { actionName: '菜单树', url: '/api/SysMenu/GetMenuTree' },
+  { actionName: '角色列表', url: '/api/SysRole/GetRoleList' },
+  { actionName: '账户列表', url: '/api/SysUser/GetUserList' },
+  { actionName: '组织架构', url: '/api/WxWork/GetTreeDepartmentList' },
+  { actionName: '请求日志', url: '/api/SysLog/GetHttpLogList' },
+  { actionName: '错误日志', url: '/api/SysLog/GetErrorLogList' },
+  { actionName: '新增账户', url: '/api/SysUser/CreateUser' },
+  { actionName: '更新角色', url: '/api/SysRole/UpdateRole' },
+  { actionName: '删除菜单', url: '/api/SysMenu/DeleteMenu' },
+]
+export const LOG_HOSTS = ['43.142.111.195:89', '192.168.1.100', '10.0.0.5', '172.16.0.1']
+const LOG_IPS = ['::ffff:27.19.162.115', '::ffff:10.0.0.8', '::ffff:172.16.0.3', '::ffff:192.168.1.66']
+export const LOG_USERS = [
+  { userId: 'admin', userName: '管理员' },
+  { userId: 'zhangsan', userName: '张三' },
+  { userId: 'lisi', userName: '李四' },
+  { userId: 'wangwu', userName: '王五' },
+  { userId: 'zhaoliu', userName: '赵六' },
+]
+const LOG_ERRORS = [
+  'System.NullReferenceException: 未将对象引用设置到对象的实例。',
+  'System.Exception: 数据库连接超时',
+  'System.ArgumentException: 参数无效',
+  'System.InvalidOperationException: 序列不包含任何元素',
+]
+
+export interface MockHttpLog {
+  id: number
+  url: string
+  method: string
+  actionName: string
+  statusCode: number
+  ipAddress: string
+  userName: string
+  createTime: string
+  elapsed: number
+}
+
+export interface MockErrorLog extends MockHttpLog {
+  message: string
+}
+
+function randomItem<T>(arr: T[]): T {
+  return arr[Math.floor(Math.random() * arr.length)]
+}
+
+function randomInt(min: number, max: number): number {
+  return Math.floor(Math.random() * (max - min + 1)) + min
+}
+
+function pad(n: number): string {
+  return String(n).padStart(2, '0')
+}
+
+function randomTime(today: Date): string {
+  const h = randomInt(0, 23)
+  const m = randomInt(0, 59)
+  const s = randomInt(0, 59)
+  return `${today.getFullYear()}/${pad(today.getMonth() + 1)}/${pad(today.getDate())} ${pad(h)}:${pad(m)}:${pad(s)}`
+}
+
+function genHttpLogs(): MockHttpLog[] {
+  const today = new Date()
+  return Array.from({ length: 38 }, (_, i) => {
+    const action = randomItem(LOG_ACTIONS)
+    const user = randomItem(LOG_USERS)
+    return {
+      id: 800 + i,
+      url: action.url,
+      method: randomItem(LOG_METHODS),
+      actionName: action.actionName,
+      statusCode: randomItem([200, 200, 200, 400, 500]),
+      ipAddress: randomItem(LOG_IPS),
+      userName: user.userName,
+      createTime: randomTime(today),
+      elapsed: randomInt(5, 2800),
+    }
+  })
+}
+
+function genErrorLogs(): MockErrorLog[] {
+  const today = new Date()
+  return Array.from({ length: 21 }, (_, i) => {
+    const action = randomItem(LOG_ACTIONS)
+    const user = randomItem(LOG_USERS)
+    return {
+      id: 500 + i,
+      url: action.url,
+      method: randomItem(LOG_METHODS),
+      actionName: action.actionName,
+      statusCode: randomItem([400, 401, 403, 404, 500]),
+      message: randomItem(LOG_ERRORS),
+      ipAddress: randomItem(LOG_IPS),
+      userName: user.userName,
+      createTime: randomTime(today),
+      elapsed: randomInt(5, 2800),
+    }
+  })
+}
+
+export const httpLogs = genHttpLogs()
+export const errorLogs = genErrorLogs()
+export { randomItem as randomLogItem }

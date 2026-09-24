@@ -5,7 +5,7 @@
  * 图形由 components.css 的 .qrcode-placeholder 提供（纯 CSS），
  * 接入真实二维码服务时替换为 img / canvas 组件即可。
  */
-import { Button } from 'antd'
+import RiArrowLeftLine from '~icons/ri/arrow-left-line'
 
 interface QrcodeLoginProps {
   onBack: () => void
@@ -13,14 +13,23 @@ interface QrcodeLoginProps {
 
 export default function QrcodeLogin({ onBack }: QrcodeLoginProps) {
   return (
-    <div className="flex flex-col items-center gap-4 py-4">
-      <div className="w-48">
+    <div className="mt-6">
+      <div className="mx-auto flex aspect-square w-full max-w-55 items-center justify-center rounded-2xl bg-slate-50 p-5">
         <div className="qrcode-placeholder" />
       </div>
-      <p className="text-sm text-gray-500">使用 App 扫码登录（占位，待接入二维码服务）</p>
-      <Button type="link" onClick={onBack}>
-        返回账号登录
-      </Button>
+
+      <p className="mt-5 text-center text-sm text-slate-400">打开企业微信或移动端管理应用扫码</p>
+
+      <div className="mt-8 text-center">
+        <button
+          type="button"
+          className="inline-flex cursor-pointer items-center gap-1.5 border-0 bg-transparent text-sm font-medium text-blue-600 transition hover:text-blue-700"
+          onClick={onBack}
+        >
+          <RiArrowLeftLine className="h-4 w-4" />
+          返回账号登录
+        </button>
+      </div>
     </div>
   )
 }

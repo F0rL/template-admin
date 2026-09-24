@@ -3,7 +3,7 @@
 ## Provider 层级（src/App.tsx）
 
 ```
-ConfigProvider (主题 token + zhCN)
+ConfigProvider (antdTheme（src/theme/index.ts） + zhCN)
 └─ AntdApp (message/notification maxCount 3)
    ├─ FeedbackBridge        # 注入 feedback 上下文实例
    ├─ QueryClientProvider   # queryClient (src/lib/queryClient.ts)
@@ -17,14 +17,16 @@ ConfigProvider (主题 token + zhCN)
 ```
 src/
 ├── api/           # 接口函数 + 类型（见 docs/data-layer.md）
-├── components/    # 共享组件（DynamicIcon / FeedbackBridge / LoadingHost）
+├── components/    # 共享组件（ProTable / DynamicIcon / FeedbackBridge / LoadingHost / PlaceholderPage）
 ├── config/        # 环境变量唯一出口
+├── hooks/         # 共享 hooks（useDialogForm）
 ├── icons/         # iconMap 注册表（ad.ts + ri.ts）
 ├── layouts/       # default/ 布局 + components/（Header/Sidebar/Logo/UpdatePwd）
 ├── lib/           # queryClient
 ├── router/        # 路由表、守卫、navigate 桥、utils/filter
 ├── stores/        # zustand modules（user/permission/app）
-├── styles/        # index.css (Tailwind) + components.css（antd 覆盖）
+├── styles/        # index.css（聚合）+ tailwind.css（@theme 映射）+ components.css（antd 覆盖 + ProTable 满高）
+├── theme/         # antdTheme：主题 token 唯一来源（见 ADR-0007）
 ├── types/         # global.d.ts（ApiResponse / PaginatedData）
 ├── utils/         # feedback/http/encrypt/validate/file/dayjs（见 docs/utils.md、docs/http.md）
 └── views/         # 页面（login / dashboard / system/* / result/error）
@@ -35,9 +37,10 @@ mock/              # vite mock（见 docs/mock.md）
 
 ### 路由表结构
 
-- `constantRoutes`（router/index.tsx）：`/login`（GuestGuard）、`/error`、`*` 兜底。
+- `constantRoutes`（router/index.tsx）：`/login`（GuestGuard）、`/error`（公开页，不经守卫）。
 - `asyncRoutes`（router/asyncRoutes.ts）= `modules/dashboard.tsx` + `modules/system.tsx`：权限路由池，path 与后端菜单 path 一致（无前导斜杠）。
 - AppRoutes 将权限路由作为 Layout 路由 children 挂载（useRoutes 无 addRoute 等价物，**增删路由 = 更新 permission store 的 routes state**）。
+- `*` 兜底（404 页）同样包 `AuthGuard`，兼作深链刷新的守卫入口：刷新时权限路由尚未生成（routes 为空），深链只能命中 splat 分支，由守卫触发菜单加载，加载完成后 useRoutes 重匹配到权限路由（splat 得分低于具体路径，不会抢占）。**禁止**把 `*` 放回 constantRoutes，否则深链刷新直接停在 404 且守卫永不执行。
 - 页面元信息放 route `handle`（title 等）。
 
 ### 权限路由链路
@@ -58,7 +61,7 @@ AuthGuard（token 存在且 isRoutesLoaded=false 时触发）
 
 - `AuthGuard`：无 token → `/login?redirect=<pathname>`；加载中渲染 null；加载失败清会话回登录。NProgress 在此 start/done。
 - `GuestGuard`：已登录访问 `/login` → 回 `/`。
-- 白名单页（/login、/error）由路由结构保证不经 AuthGuard。
+- 白名单页（/login、/error）由路由结构保证不经 AuthGuard；未登录访问其他路径（含未知路径）→ 登录页。
 
 ### 非组件上下文跳转（router/navigate.ts）
 
@@ -66,6 +69,7 @@ axios 拦截器等非组件上下文经 navigate 桥跳转/读路径；引用由
 
 ## 布局（layouts/default）
 
+- 根容器 `bg-bg-layout`（antd `colorBgLayout`，灰底）：内容区灰底，与 `panel-card` 白块形成分块对比；Header / aside 保持 `bg-white`。
 - aside 三态宽度：`!sidebarOpened → w-0` / `sidebarIconOnly → w-16` / `w-56`，transition-all。
 - Sidebar 菜单：`buildMenuItems()`（SidebarItem.tsx 纯函数）把后端菜单树转为 antd Menu items——**叶子 key = `/${item.path}`（点击导航），父级 key = path || id（仅展开）**；Menu onClick 中仅 `key.startsWith('/')` 才 navigate。`isMenuShow !== false` 过滤。
 - Header：折叠按钮 + 面包屑（`findMenuTrail(menuData, pathname)`）+ 用户下拉（修改密码 / 退出登录）。
@@ -73,11 +77,11 @@ axios 拦截器等非组件上下文经 navigate 桥跳转/读路径；引用由
 
 ## Stores（zustand）
 
-| Store      | 持久化                | 关键成员                                                                 |
-| ---------- | --------------------- | ------------------------------------------------------------------------ |
-| user       | token + userInfo      | login / loadUserInfo / logout / resetToken；selectIsLoggedIn / selectRoles |
-| permission | 否（会话态）          | menuData / routes / firstPath / isRoutesLoaded；generateRoutes / resetRoutes / refreshMenu |
-| app        | sidebarOpened         | sidebarIconOnly（会话临态）/ toggleSidebar / closeSidebar / toggleSidebarIconOnly |
+| Store      | 持久化           | 关键成员                                                                                   |
+| ---------- | ---------------- | ------------------------------------------------------------------------------------------ |
+| user       | token + userInfo | login / loadUserInfo / logout / resetToken；selectIsLoggedIn / selectRoles                 |
+| permission | 否（会话态）     | menuData / routes / firstPath / isRoutesLoaded；generateRoutes / resetRoutes / refreshMenu |
+| app        | sidebarOpened    | sidebarIconOnly（会话临态）/ toggleSidebar / closeSidebar / toggleSidebarIconOnly          |
 
 持久化 key 经 `stores/index.ts` 的 `storageKey(id)` = `${VITE_APP_STORAGE_NS}:${id}`，避免同源多应用冲突。
 
