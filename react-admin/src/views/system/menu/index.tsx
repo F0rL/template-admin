@@ -10,6 +10,8 @@ import type { Key } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Button, Form, Input, Switch } from 'antd'
 import { PlusOutlined, ReloadOutlined, SearchOutlined } from '@ant-design/icons'
+import CollapseVerticalLine from '~icons/ri/collapse-vertical-line'
+import ExpandVerticalLine from '~icons/ri/expand-vertical-line'
 import ProTable from '@/components/ProTable'
 import type { ProTableColumn } from '@/components/ProTable'
 import DynamicIcon from '@/components/DynamicIcon'
@@ -218,8 +220,12 @@ export default function SystemMenuListPage() {
           <Button type="primary" icon={<PlusOutlined />} onClick={handleAdd}>
             新增
           </Button>
-          <Button onClick={handleExpandAll}>展开全部</Button>
-          <Button onClick={handleCollapseAll}>收起全部</Button>
+          <Button icon={<ExpandVerticalLine />} onClick={handleExpandAll}>
+            展开全部
+          </Button>
+          <Button icon={<CollapseVerticalLine />} onClick={handleCollapseAll}>
+            收起全部
+          </Button>
         </div>
 
         <ProTable<MenuTreeNode>

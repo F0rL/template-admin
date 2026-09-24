@@ -21,7 +21,7 @@ react-admin 是 React 后台管理**范本**（react-admin-template）：与 vue
 | 6   | HTTP      | axios + ApiResponse 解包 + 401 统一处理                           | ADR-0006 |
 | 7   | 样式      | Tailwind 4 + antd token（ConfigProvider + @theme 映射）           | ADR-0007 |
 | 8   | Mock      | vite-plugin-mock-dev-server（与 vue3-admin 同方案）               | ADR-0008 |
-| 9   | Compiler  | React Compiler 启用（babel 稳定路线）                             | ADR-0009 |
+| 9   | Compiler  | React Compiler 启用（oxc 原生路线）                               | ADR-0009 |
 | 10  | 图表      | echarts 6 + 自写 useECharts（Phase 2 实装）                       | ADR-0010 |
 | 11  | 共享组件  | ProTable（antd Table 薄封装，已落地）+ SelectIcon（待菜单管理页） | ADR-0011 |
 | 12  | 交付策略  | 骨架先行；dashboard/系统管理空白占位；先做一个模板页定调          | ADR-0012 |
@@ -38,7 +38,7 @@ react-admin 是 React 后台管理**范本**（react-admin-template）：与 vue
 | react / react-dom         | ^19.3               | UI 框架                                                    |
 | antd / @ant-design/icons  | ^6.6 / ^6           | 组件库与图标（v6 默认 CSS 变量，兼容 React 19 无需 patch） |
 | react-router              | ^8.4                | 路由（v7 起合并 react-router-dom）                         |
-| @tanstack/react-query     | ^5.103              | 服务端状态                                                 |
+| @tanstack/react-query     | ^5.103              | 服务端状态（devtools 面板由 VITE_APP_ENABLE_DEVTOOLS 控制） |
 | zustand                   | ^5.0                | 全局状态（persist 内置）                                   |
 | axios / dayjs / nprogress | ^1.7 / ^1.11 / ^0.2 | HTTP / 日期 / 进度条（同 vue3-admin）                      |
 | jsencrypt + node-forge    | ^3.5 / ^1.4         | 改密 RSA / AES 工具（同 vue3-admin）                       |
@@ -47,12 +47,11 @@ react-admin 是 React 后台管理**范本**（react-admin-template）：与 vue
 
 | 依赖                                                              | 版本               | 用途                              |
 | ----------------------------------------------------------------- | ------------------ | --------------------------------- |
-| vite / @vitejs/plugin-react                                       | ^8.1 / ^6.1        | 构建（Oxc React Refresh）         |
+| vite / @vitejs/plugin-react                                       | ^8.1 / ^6.1        | 构建（Oxc React Refresh）+ Compiler 接入 |
 | typescript                                                        | ~6.0               | 类型（strict）                    |
 | tailwindcss + @tailwindcss/vite                                   | ^4.3               | 样式（CSS-first，无 config 文件） |
 | eslint / typescript-eslint / react-hooks                          | ^10 / ^8.70 / ^7.1 | Lint（含 Compiler 规则）          |
 | prettier + prettier-plugin-tailwindcss                            | ^3.9 / ^0.8        | 格式化与类名排序                  |
-| babel-plugin-react-compiler + @rolldown/plugin-babel              | ^1.0               | React Compiler 接入               |
 | unplugin-icons + @svgr/core + @svgr/plugin-jsx + @iconify-json/ri | ^24                | 静态图标组件（ri 集）             |
 | vite-plugin-mock-dev-server                                       | ^2.4               | Mock（框架无关）                  |
 
@@ -213,7 +212,7 @@ Phase 3 已替换：`/sys-role-list`（角色管理）、`/sys-menu-list`（菜�
 
 - 验证：`pnpm lint` + `pnpm typecheck`（tsc --noEmit）双绿；浏览器验收 `http://localhost:4001/react-admin/`
 - ESLint flat config：@eslint/js + typescript-eslint（非 type-checked 档）+ eslint-plugin-react-hooks v7（含 compiler 规则）+ react-refresh
-- React 19 StrictMode 开启；React Compiler 覆盖 `src/**`（按官方 preset filter 命中范围，避免全量 babel 开销）
+- React 19 StrictMode 开启；React Compiler 经 @vitejs/plugin-react `compiler: true`（oxc 原生路线）启用
 
 ## 9. 文档体系
 

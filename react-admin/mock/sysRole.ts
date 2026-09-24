@@ -1,13 +1,23 @@
 /**
- * 角色 mock（Phase 2 起：账户表单角色下拉；Phase 3 补齐角色管理页端点）
+ * 角色 mock
  * ---------------------------------------------
  * 对齐 src/api/system/sysRole.ts：列表 / 实体 / 增删改。
  * 写操作均为假成功（不改动 db 内存数据）。
  */
 import { defineMock } from 'vite-plugin-mock-dev-server'
-import type { RoleEntity } from '../src/api/system/sysRole'
-import { makePageResp, makeResp, makeErrorResp, paginate } from './utils'
-import { roles } from './db'
+import { makeResp, makePageResp, makeErrorResp, paginate } from './utils'
+import { roles, menus } from './db'
+
+/** 按角色绑定的 menuIdsJSON 解析出菜单列表（RoleEntity.menuList 契约） */
+function menuListOf(role: (typeof roles)[number]): { id: string; title: string }[] {
+  let ids: string[] = []
+  try {
+    ids = JSON.parse(role.menuIdsJSON) as string[]
+  } catch {
+    ids = []
+  }
+  return menus.filter(m => ids.includes(m.id)).map(m => ({ id: m.id, title: m.title }))
+}
 
 export default defineMock([
   {
@@ -27,13 +37,16 @@ export default defineMock([
     body: ({ query }) => {
       const role = roles.find(r => r.id === query.id)
       if (!role) return makeErrorResp('角色不存在')
-      const entity: RoleEntity = {
+      return makeResp({
         id: role.id,
         name: role.name,
+        isDelHandle: role.id !== '10086',
         status: { value: role.status, text: role.status === 1 ? '启用' : '禁用' },
+        menuList: menuListOf(role),
+        localUser: [],
+        workUser: [],
         menuIdsJSON: role.menuIdsJSON,
-      }
-      return makeResp(entity)
+      })
     },
   },
   // 以下写操作假成功：不改动 db 数据

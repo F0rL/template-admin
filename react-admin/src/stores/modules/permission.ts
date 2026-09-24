@@ -1,13 +1,13 @@
 import { create } from 'zustand'
 import type { RouteObject } from 'react-router'
-import type { MenuItem } from '@/api/system/auth'
-import { fetchUserRightMenu } from '@/api/system/auth'
+import type { MenuTreeNode } from '@/api/system/sysMenu'
+import { fetchUserRightMenu } from '@/api/system/sysMenu'
 import { asyncRoutes } from '@/router/asyncRoutes'
 import { collectMenuPaths, filterRoutes, getFirstVisiblePath } from '@/router/utils/filter'
 
 interface PermissionState {
   /** 后端菜单树（Sidebar 渲染数据源） */
-  menuData: MenuItem[]
+  menuData: MenuTreeNode[]
   /** 动态路由是否已加载（AuthGuard 判断依据） */
   isRoutesLoaded: boolean
   /**

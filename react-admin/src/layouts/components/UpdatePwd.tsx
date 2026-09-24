@@ -11,7 +11,7 @@
 import { useNavigate } from 'react-router'
 import { useMutation } from '@tanstack/react-query'
 import { Button, Form, Input, Modal } from 'antd'
-import { updateUserPwd } from '@/api/system/auth'
+import { updateUserPwd } from '@/api/system/sysUser'
 import { usePermissionStore } from '@/stores/modules/permission'
 import { useUserStore } from '@/stores/modules/user'
 import { encryptPwdRsa } from '@/utils/encrypt'

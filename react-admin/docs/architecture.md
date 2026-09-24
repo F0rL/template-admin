@@ -7,8 +7,9 @@ ConfigProvider (antdTheme（src/theme/index.ts） + zhCN)
 └─ AntdApp (message/notification maxCount 3)
    ├─ FeedbackBridge        # 注入 feedback 上下文实例
    ├─ QueryClientProvider   # queryClient (src/lib/queryClient.ts)
-   │  └─ BrowserRouter (basename = config.BASE_URL)
-   │     └─ RouterRoot      # NavigateBridge + AppRoutes
+   │  ├─ BrowserRouter (basename = config.BASE_URL)
+   │  │  └─ RouterRoot      # NavigateBridge + AppRoutes
+   │  └─ ReactQueryDevtools # 查询调试面板（VITE_APP_ENABLE_DEVTOOLS 控制，默认关闭）
    └─ LoadingHost           # 全屏加载态（独立于路由树）
 ```
 
@@ -25,7 +26,7 @@ src/
 ├── lib/           # queryClient
 ├── router/        # 路由表、守卫、navigate 桥、utils/filter
 ├── stores/        # zustand modules（user/permission/app）
-├── styles/        # index.css（聚合）+ tailwind.css（@theme 映射）+ components.css（antd 覆盖 + ProTable 满高）
+├── styles/        # index.css（聚合）+ tailwind.css（@theme 映射）+ components.css（antd 覆盖 + ProTable 满高 + 页面切换动画）
 ├── theme/         # antdTheme：主题 token 唯一来源（见 ADR-0007）
 ├── types/         # global.d.ts（ApiResponse / PaginatedData）
 ├── utils/         # feedback/http/encrypt/validate/file/dayjs（见 docs/utils.md、docs/http.md）
@@ -73,7 +74,7 @@ axios 拦截器等非组件上下文经 navigate 桥跳转/读路径；引用由
 - aside 三态宽度：`!sidebarOpened → w-0` / `sidebarIconOnly → w-16` / `w-56`，transition-all。
 - Sidebar 菜单：`buildMenuItems()`（SidebarItem.tsx 纯函数）把后端菜单树转为 antd Menu items——**叶子 key = `/${item.path}`（点击导航），父级 key = path || id（仅展开）**；Menu onClick 中仅 `key.startsWith('/')` 才 navigate。`isMenuShow !== false` 过滤。
 - Header：折叠按钮 + 面包屑（`findMenuTrail(menuData, pathname)`）+ 用户下拉（修改密码 / 退出登录）。
-- 页面切换动画：内容区 `<div key={location.pathname} className="animate-page-enter">` 包 `<Suspense><Outlet/></Suspense>`，key 变化触发重挂载播放动画。
+- 页面切换动画：内容区以 `<ViewTransition default="page-fade">` 包 `<Suspense><Outlet/></Suspense>`（React 19.3 原生组件；RR 导航状态更新包在 startTransition 中故可激活过渡；动画定义见 `src/styles/components.css`，不支持该 API 的浏览器自动跳过动画）。
 
 ## Stores（zustand）
 
@@ -95,6 +96,6 @@ axios 拦截器等非组件上下文经 navigate 桥跳转/读路径；引用由
 ## 构建与分包（vite.config.ts）
 
 - base = `VITE_APP_BASE_URL`（/react-admin/）；端口 4001；`/api` 代理到 `VITE_APP_BASE_API`。
-- React Compiler babel 仅 include `src/**`；React 插件负责其余转换。
+- React Compiler 经 `@vitejs/plugin-react` 的 `compiler: true`（oxc 原生路线，见 ADR-0009 修订）启用，无 Babel 转换层。
 - rolldown codeSplitting groups 按序：react-vendor（必须最前，依赖递归捕获）→ ui（antd/rc-*/@ant-design）→ react-query → axios → crypto（node-forge/jsencrypt）。
 - build target es2022。

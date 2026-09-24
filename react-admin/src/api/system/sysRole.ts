@@ -21,7 +21,12 @@ export interface RoleListParams {
 export interface RoleEntity {
   id: string
   name: string
+  isDelHandle?: boolean
   status: { value: number; text: string }
+  /** 已授权菜单（按 menuIdsJSON 解析） */
+  menuList: { id: string; title: string }[]
+  localUser: { id: string; name: string }[]
+  workUser: { id: string; name: string }[]
   /** 已授权菜单 id 的 JSON 数组字符串（仅完全勾选，用于树回填） */
   menuIdsJSON?: string
 }

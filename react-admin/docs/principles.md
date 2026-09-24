@@ -3,7 +3,7 @@
 ## React 19 基线
 
 - 严格模式（StrictMode）常开：副作用双调用是预期行为，不得为绕过而移除。
-- React Compiler 已启用（`babel-plugin-react-compiler`，经 `@rolldown/plugin-babel` 仅处理 `src/**`）：组件自动记忆化，**不手写 memo / useMemo / useCallback 做性能优化**（仅在外部系统订阅、非组件依赖等 Compiler 无法覆盖的场景使用 hooks）。
+- React Compiler 已启用（`@vitejs/plugin-react` 的 `compiler: true`，oxc 原生路线，无 Babel 转换层，见 ADR-0009 修订）：组件自动记忆化，**不手写 memo / useMemo / useCallback 做性能优化**（仅在外部系统订阅、非组件依赖等 Compiler 无法覆盖的场景使用 hooks）。
 - 函数组件 + Hooks；禁止 class 组件。
 - 禁止在 effect 体内同步调用 setState（eslint react-hooks/compiler 规则会报错）；数据获取用 react-query，派生数据直接在渲染期计算。
 

@@ -1,6 +1,6 @@
 # ADR-0009：启用 React Compiler
 
-- 状态：已接受
+- 状态：已接受（2026-09-24 修订：接入方式切换为 oxc 原生路线，见文末「修订」）
 - 日期：2026-09-23
 - 关联：ADR-0013
 
@@ -28,4 +28,12 @@ React Compiler（`babel-plugin-react-compiler`）于 2025-10 发布 1.0 稳定�
 ## 被否决的备选
 
 - **暂缓（手动记忆化）**：手动 memo/useCallback 属于过时实践，范本不应示范。
-- **oxc 原生 compiler 路线（`react({ compiler: true })`）**：plugin-react 6.1 中的实验特性，范本不押注实验路线。
+- **oxc 原生 compiler 路线（`react({ compiler: true })`）**：当时为 plugin-react 6.1 中的实验特性，范本不押注实验路线。（2026-09-24 修订：该路线已稳定并被官方推荐，否决理由失效，由文末「修订」采纳。）
+
+## 修订（2026-09-24）：接入方式切换为 oxc 原生路线
+
+- `@vitejs/plugin-react` 6.1+ 内置 React Compiler 原生支持（基于 `oxc-transform-react`），配置收敛为 `react({ compiler: true })`，该路线已稳定并被官方推荐，原「实验特性」否决理由失效。
+- 构建配置移除 Babel 链路：删除 `@rolldown/plugin-babel` + `babel-plugin-react-compiler` 及配套依赖（`@babel/core` / `@babel/plugin-transform-runtime` / `@babel/runtime` / `@types/babel__core`），vite.config 中 babel 插件替换为 `react({ compiler: true })`，dev 冷启动与构建提速、依赖面收窄。
+- Compiler 语义与 Babel 路线一致（自动记忆化行为不变），本 ADR 的编码约定（不手写 memo/useMemo/useCallback）与 react-hooks compiler lint 规则不受影响。
+- `@babel/runtime` 仍作为 antd（rc-*）的传递依赖存在于产物 ui 分包，分包分组注释不变。
+- 新增项目级 `.npmrc`：`auto-install-peers=false`——阻止 pnpm 把 plugin-react 的 optional peers（`@rolldown/plugin-babel`、`babel-plugin-react-compiler`）自动装回 node_modules，保证依赖面与 package.json 一致；派生项目新增依赖时需显式声明所需 peer 包。

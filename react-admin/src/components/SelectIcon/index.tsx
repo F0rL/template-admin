@@ -2,8 +2,9 @@
  * SelectIcon — 图标选择器（Popover + 双标签页）
  * ---------------------------------------------
  * 受控 value: string（图标名，如 'ad:menu' / 'ri:user-line'），
- * 数据源为 iconMap 的两张子表（ad.ts / ri.ts），键名与后端菜单 icon 字段一致。
- * 结构对齐 vue3-admin 版 SelectIcon；接入 Form.Item 时由表单注入 value/onChange。
+ * 数据源为 iconMap 的两张子表（ad.ts / ri.ts），键名与后端菜单
+ * icon 字段一致。结构对齐 vue3-admin 版 SelectIcon（默认 antd icons 页签）；
+ * 接入 Form.Item 时由表单注入 value/onChange。
  *
  * 用法：
  *   <SelectIcon value={icon} onChange={setIcon} />

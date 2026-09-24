@@ -1,76 +1,97 @@
 /**
- * 菜单 mock（Phase 3：角色表单权限树 + 菜单管理页）
+ * 菜单 mock
  * ---------------------------------------------
- * 对齐 src/api/system/sysMenu.ts：树 / 实体 / 父级候选 / 增删改。
- * 数据源为 db.userMenus（嵌套树），handler 内扁平化后补 parentId 语义。
+ * 对齐 src/api/system/sysMenu.ts 的端点：右侧菜单 / 树 / 列表 / 实体 / 父级候选 / 增删改。
+ * 数据源为 db.menus（扁平列表，parentId 表达层级）。
+ * 注意：buildTree 保持「叶子节点不带 children」，避免 antd Table 渲染空展开按钮
+ * （与 vue3-admin 的 children: [] 写法有意不同，返回数据语义一致）。
  * 写操作均为假成功（不改动 db 内存数据）。
  */
 import { defineMock } from 'vite-plugin-mock-dev-server'
 import type { MenuTreeNode } from '../src/api/system/sysMenu'
-import { makeResp, makeErrorResp } from './utils'
-import { userMenus, type MockMenuNode } from './db'
+import { makeResp, makePageResp, makeErrorResp } from './utils'
+import { menus, type MockMenu } from './db'
 
-/** 菜单树 → 扁平节点（补 parent，供搜索 / 父级候选 / 实体查询） */
-function flattenMenus(nodes: MockMenuNode[], parent: { id: string } | null = null): MenuTreeNode[] {
-  return nodes.flatMap(node => [
-    {
-      id: node.id,
-      title: node.title,
-      path: node.path,
-      icon: node.icon,
-      order: node.order,
-      isMenuShow: node.isMenuShow,
-      _disabled: node._disabled,
-      parent,
-    },
-    ...(node.children ? flattenMenus(node.children, { id: node.id }) : []),
-  ])
+/** db 扁平菜单 → 接口树节点（parent 仅携带 id 语义） */
+function toTreeNode(m: MockMenu): MenuTreeNode {
+  return {
+    id: m.id,
+    title: m.title,
+    path: m.path,
+    icon: m.icon,
+    order: m.order,
+    createTime: m.createTime,
+    isMenuShow: m.isMenuShow,
+    _disabled: m._disabled,
+    parent: m.parentId ? { id: m.parentId } : null,
+  }
 }
 
-/** 扁平节点 → 树（父级未命中时提升为根，保持入参顺序） */
-function buildTree(items: MenuTreeNode[]): MenuTreeNode[] {
+/** 扁平节点 → 树（父级未命中时提升为根，保持入参顺序；叶子节点不带 children） */
+function buildTree(items: MockMenu[]): MenuTreeNode[] {
   const map = new Map<string, MenuTreeNode>()
   const roots: MenuTreeNode[] = []
-  for (const item of items) map.set(item.id, { ...item, children: [] })
+  for (const item of items) map.set(item.id, toTreeNode(item))
   for (const item of items) {
     const node = map.get(item.id)!
-    const parent = item.parent ? map.get(item.parent.id) : undefined
-    if (parent) parent.children!.push(node)
+    const parent = item.parentId ? map.get(item.parentId) : undefined
+    if (parent) (parent.children ??= []).push(node)
     else roots.push(node)
   }
   return roots
 }
 
 export default defineMock([
+  // 当前用户右侧菜单（GET，对齐 API 层 apiGet）
+  {
+    url: '/api/SysMenu/GetUserRightMenu',
+    method: 'GET',
+    body: () => makeResp(buildTree(menus.filter(m => m.isMenuShow))),
+  },
   {
     url: '/api/SysMenu/GetMenuTree',
     method: 'GET',
     body: ({ query }) => {
       const searchKey = String(query.searchKey ?? '').toLowerCase()
-      const items = flattenMenus(userMenus)
       const filtered = searchKey
-        ? items.filter(
+        ? menus.filter(
             m =>
               m.title.toLowerCase().includes(searchKey) ||
               (m.path ?? '').toLowerCase().includes(searchKey),
           )
-        : items
+        : menus
       return makeResp(buildTree(filtered))
+    },
+  },
+  // 菜单列表不分页（API 层参数仅 searchKey），但响应为 PaginatedData 包装
+  {
+    url: '/api/SysMenu/GetMenuList',
+    method: 'GET',
+    body: ({ query }) => {
+      const searchKey = String(query.searchKey ?? '').toLowerCase()
+      const filtered = searchKey
+        ? menus.filter(
+            m =>
+              m.title.toLowerCase().includes(searchKey) ||
+              (m.path ?? '').toLowerCase().includes(searchKey),
+          )
+        : menus
+      return makePageResp(filtered.map(toTreeNode), filtered.length)
     },
   },
   {
     url: '/api/SysMenu/GetMenuEntity',
     method: 'GET',
     body: ({ query }) => {
-      const item = flattenMenus(userMenus).find(m => m.id === query.id)
+      const item = menus.find(m => m.id === query.id)
       if (!item) return makeErrorResp('菜单不存在')
-      return makeResp(item)
+      return makeResp(toTreeNode(item))
     },
   },
   {
     url: '/api/SysMenu/GetParentMenuAll',
     method: 'GET',
-    body: () => makeResp(flattenMenus(userMenus).map(m => ({ id: m.id, title: m.title }))),
+    body: () => makeResp(menus.map(m => ({ id: m.id, title: m.title }))),
   },
   // 以下写操作假成功：不改动 db 数据
   { url: '/api/SysMenu/CreateMenu', method: 'POST', body: () => makeResp(null) },

@@ -9,10 +9,12 @@ export interface MenuTreeNode {
   path?: string
   icon?: string
   order?: number
+  createTime?: string
   isMenuShow?: boolean
   /** 系统内置菜单（不可删除） */
   _disabled?: boolean
   parent?: { id: string } | null
+  sysFile?: { sysFileId: string; url: string }
   children?: MenuTreeNode[]
 }
 
@@ -28,6 +30,16 @@ export interface MenuPayload {
 }
 
 // ==================== API Functions ====================
+
+/** 当前用户可见菜单树（Sidebar 渲染与权限路由过滤依据） */
+export function fetchUserRightMenu() {
+  return apiGet<MenuTreeNode[]>('/SysMenu/GetUserRightMenu')
+}
+
+/** 菜单管理列表（不分页查询，响应为 PaginatedData 包装） */
+export function fetchMenuList(params?: { searchKey?: string }, signal?: AbortSignal) {
+  return apiGet<PaginatedData<MenuTreeNode>>('/SysMenu/GetMenuList', { params, signal })
+}
 
 export function fetchMenuTree(params?: { searchKey?: string }, signal?: AbortSignal) {
   return apiGet<MenuTreeNode[]>('/SysMenu/GetMenuTree', { params, signal })

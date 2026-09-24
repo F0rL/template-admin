@@ -26,7 +26,7 @@ react-admin 范本通用术语。「vue3-admin 对应」列仅作对照参考，
 | useDialogForm             | 弹窗表单 hook（open / close / pending / 提交成功回调失效缓存）                                      | composable 同名               |
 | 占位页（PlaceholderPage） | Phase 1 空白页：仅展示页面名，路由/菜单先行                                                         | 无（本次新增）                |
 | 模板页                    | Phase 2 首个完整实现的系统管理页面，固定「列表页模板」形制供其余页面复制                            | 无（本次新增）                |
-| React Compiler            | React 官方自动记忆化编译器（babel-plugin-react-compiler 1.0 GA），替代手动 memo/useMemo/useCallback | 无                            |
+| React Compiler            | React 官方自动记忆化编译器（1.0 GA，经 @vitejs/plugin-react `compiler: true` oxc 原生路线启用），替代手动 memo/useMemo/useCallback | 无                            |
 | queryClient 共享实例      | lib/queryClient.ts 预配置：staleTime 0 / gcTime 5min / retry 0 / 关闭 focus 重取                    | 同配置（vue-query 版）        |
 | dev-server mock           | vite-plugin-mock-dev-server 中间件拦截 `/api/*`，Network 可见，生产构建天然无 mock                  | 同方案                        |
 | gen:api                   | （暂缓）从 swagger.json 生成/合并接口文件的脚本                                                     | scripts/gen-api.js            |

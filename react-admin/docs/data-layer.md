@@ -66,7 +66,7 @@ const { data, isFetching } = useQuery({
 
 ## 共享 QueryClient
 
-`src/lib/queryClient.ts` 导出预配置的 `queryClient` 实例（App.tsx 内 `QueryClientProvider` 挂载）：`staleTime: 0`（每次挂载重新拉取，缓存仅作过渡展示）、`gcTime: 5min`、`retry: 0`（查询与变更均不自动重试）、`refetchOnWindowFocus: false`。需要 `invalidateQueries` / `useQueryClient` 时直接用 Hook 或导入该实例。
+`src/lib/queryClient.ts` 导出预配置的 `queryClient` 实例（App.tsx 内 `QueryClientProvider` 挂载）：`staleTime: 0`（每次挂载重新拉取，缓存仅作过渡展示）、`gcTime: 5min`、`retry: 0`（查询与变更均不自动重试）、`refetchOnWindowFocus: false`。需要 `invalidateQueries` / `useQueryClient` 时直接用 Hook 或导入该实例。开发环境由 App.tsx 挂载 `<ReactQueryDevtools>`，开关经 config 出口读环境变量 `VITE_APP_ENABLE_DEVTOOLS`（默认关闭，生产环境请保持关闭，与 vue3-admin 的 VueQueryDevtools 开关语义一致），用于检查查询缓存、queryKey 与失效效果。
 
 ## 查询键与缓存失效
 

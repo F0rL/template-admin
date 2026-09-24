@@ -9,12 +9,12 @@
  */
 import type { ReactNode } from 'react'
 import type { MenuProps } from 'antd'
-import type { MenuItem } from '@/api/system/auth'
+import type { MenuTreeNode } from '@/api/system/sysMenu'
 import DynamicIcon from '@/components/DynamicIcon'
 
 export type MenuItems = NonNullable<MenuProps['items']>
 
-export function buildMenuItems(menuTree: MenuItem[]): MenuItems {
+export function buildMenuItems(menuTree: MenuTreeNode[]): MenuItems {
   return menuTree
     .filter(item => item.isMenuShow !== false)
     .map(item => {

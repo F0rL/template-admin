@@ -15,9 +15,16 @@ export interface UserListItem {
   id: string
   name: string
   userId: string | null
+  fileId?: string | null
+  depId?: string | null
+  depName?: string | null
   avatar: string
+  wechatWorkUserId?: string | null
   status: number
   statusName: string
+  userType: number
+  userTypeName: string
+  isAssociated: boolean
   sysRoleUsers: UserRoleItem[]
   /** false 时隐藏行内操作按钮（系统内置账号） */
   isDelHandle?: boolean
@@ -38,6 +45,13 @@ export interface UserPayload {
   status: number
   avatar: string
   roleIds: string[]
+}
+
+/** 修改密码载荷（提交前各字段经 RSA 加密） */
+export interface UpdatePwdPayload {
+  oldPwd: string
+  newPwd1: string
+  newPwd2: string
 }
 
 // ==================== API Functions ====================
@@ -64,6 +78,11 @@ export function deleteUser(data: { ids: string[] }) {
 
 export function resetUserPwd(data: { userId: string }) {
   return apiPost('/SysUser/ResetPwd', data)
+}
+
+/** 修改当前用户密码（oldPwd / newPwd1 / newPwd2 均为 RSA 密文） */
+export function updateUserPwd(data: UpdatePwdPayload) {
+  return apiPost('/SysUser/UpdatePwd', data)
 }
 
 // ==================== Query Keys ====================

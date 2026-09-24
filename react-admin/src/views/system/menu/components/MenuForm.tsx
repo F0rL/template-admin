@@ -161,7 +161,11 @@ export default function MenuForm({ open, editingRow, onClose, onSuccess }: MenuF
             <SelectIcon placeholder="请选择图标" />
           </Form.Item>
 
-          <Form.Item name="order" label="排序号" rules={[{ required: true, message: '请输入排序号' }]}>
+          <Form.Item
+            name="order"
+            label="排序号"
+            rules={[{ required: true, message: '请输入排序号' }]}
+          >
             <InputNumber className="w-full" min={1} max={1000000000} placeholder="请输入排序号" />
           </Form.Item>
         </Form>

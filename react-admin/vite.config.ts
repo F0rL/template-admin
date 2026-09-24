@@ -1,7 +1,6 @@
 import { resolve } from 'path'
 import { defineConfig, loadEnv } from 'vite'
 import react from '@vitejs/plugin-react'
-import babel from '@rolldown/plugin-babel'
 import tailwindcss from '@tailwindcss/vite'
 import Icons from 'unplugin-icons/vite'
 import { mockDevServerPlugin } from 'vite-plugin-mock-dev-server'
@@ -23,13 +22,9 @@ export default defineConfig(({ mode }) => {
         exclude: ['**/db.ts', '**/utils.ts'],
       }),
       tailwindcss(),
-      // React Compiler（babel 稳定路线）：仅处理 src 下 ts/tsx，避免全量 babel 开销；
-      // 插件已自动为 .ts/.tsx/.jsx 配置 Babel parser，无需额外 preset-typescript
-      babel({
-        include: /[\\/]src[\\/].*\.[jt]sx?(?:$|\?)/,
-        plugins: ['babel-plugin-react-compiler'],
-      }),
-      react(),
+      // React Compiler（oxc 原生路线，@vitejs/plugin-react 6.1+）：
+      // 组件自动记忆化由插件内置的 oxc transform 完成，无需 Babel 转换层
+      react({ compiler: true }),
       Icons({
         compiler: 'jsx',
         scale: 1,

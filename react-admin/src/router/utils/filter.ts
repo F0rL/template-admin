@@ -1,10 +1,10 @@
 import type { RouteObject } from 'react-router'
-import type { MenuItem } from '@/api/system/auth'
+import type { MenuTreeNode } from '@/api/system/sysMenu'
 
 /** 后端菜单树中出现的所有 path（含子节点），作为权限路由过滤依据 */
-export function collectMenuPaths(menuTree: MenuItem[]): Set<string> {
+export function collectMenuPaths(menuTree: MenuTreeNode[]): Set<string> {
   const paths = new Set<string>()
-  function walk(nodes: MenuItem[]) {
+  function walk(nodes: MenuTreeNode[]) {
     for (const node of nodes) {
       if (node.path) paths.add(node.path)
       if (node.children?.length) walk(node.children)
@@ -24,9 +24,9 @@ export function filterRoutes(routes: RouteObject[], allowedPaths: Set<string>): 
 }
 
 /** 在菜单树中查找 path 的祖先链（Header 面包屑用），未命中返回空数组 */
-export function findMenuTrail(menuTree: MenuItem[], path: string): MenuItem[] {
+export function findMenuTrail(menuTree: MenuTreeNode[], path: string): MenuTreeNode[] {
   const target = path.replace(/^\/+/, '')
-  function walk(nodes: MenuItem[], trail: MenuItem[]): MenuItem[] | null {
+  function walk(nodes: MenuTreeNode[], trail: MenuTreeNode[]): MenuTreeNode[] | null {
     for (const node of nodes) {
       const next = [...trail, node]
       if (node.path === target) return next
@@ -41,7 +41,7 @@ export function findMenuTrail(menuTree: MenuItem[], path: string): MenuItem[] {
 }
 
 /** 首个可见菜单的 path（isMenuShow === false 的跳过，优先下钻子级） */
-export function getFirstVisiblePath(menuTree: MenuItem[]): string | null {
+export function getFirstVisiblePath(menuTree: MenuTreeNode[]): string | null {
   for (const node of menuTree) {
     if (node.isMenuShow === false) continue
     if (node.children?.length) {

@@ -1,24 +1,31 @@
 /**
- * 账户管理 mock（Phase 2）
+ * 账户管理 mock
  * ---------------------------------------------
- * 对齐 src/api/system/sysUser.ts 的端点：列表 / 实体 / 增删改 / 重置密码。
+ * 对齐 src/api/system/sysUser.ts 的端点：列表 / 实体 / 增删改 / 重置密码 / 修改自身密码。
  * 写操作均为假成功（不改动 db 内存数据）。
  */
 import { defineMock } from 'vite-plugin-mock-dev-server'
 import type { UserListItem } from '../src/api/system/sysUser'
 import { makeResp, makePageResp, makeErrorResp, paginate } from './utils'
-import { sysUsers, roleNameOf, type MockSysUser } from './db'
+import { users, roleNameOf, type MockUser } from './db'
 
 /** db 数据 → 接口契约（列表行与实体同形状） */
-function toListItem(u: MockSysUser): UserListItem {
+function toListItem(u: MockUser): UserListItem {
   return {
     _disabled: u._disabled,
     id: u.id,
     name: u.name,
     userId: u.userId,
+    fileId: null,
+    depId: u.depId,
+    depName: u.depName,
     avatar: u.avatar,
+    wechatWorkUserId: u.userId,
     status: u.status,
     statusName: u.status === 1 ? '启用' : '禁用',
+    userType: 10,
+    userTypeName: '本地用户',
+    isAssociated: true,
     sysRoleUsers: u.roleIds.map(id => ({ roleId: id, roleName: roleNameOf(id) })),
     isDelHandle: u.isDelHandle,
   }
@@ -31,10 +38,10 @@ export default defineMock([
     body: ({ query }) => {
       const searchKey = String(query.searchKey ?? '').toLowerCase()
       const filtered = searchKey
-        ? sysUsers.filter(
+        ? users.filter(
             u => u.userId.toLowerCase().includes(searchKey) || u.name.toLowerCase().includes(searchKey),
           )
-        : sysUsers
+        : users
       const { list, total } = paginate(filtered, Number(query.page) || 1, Number(query.rows) || 10)
       return makePageResp(list.map(toListItem), total)
     },
@@ -43,8 +50,8 @@ export default defineMock([
     url: '/api/SysUser/GetUserEntity',
     method: 'GET',
     body: ({ query }) => {
-      const user = sysUsers.find(u => u.id === query.id)
-      if (!user) return makeErrorResp('账户不存在')
+      const user = users.find(u => u.id === query.id)
+      if (!user) return makeErrorResp('用户不存在')
       return makeResp(toListItem(user))
     },
   },
@@ -53,4 +60,5 @@ export default defineMock([
   { url: '/api/SysUser/UpdateUser', method: 'POST', body: () => makeResp(null) },
   { url: '/api/SysUser/DeleteUser', method: 'POST', body: () => makeResp(null) },
   { url: '/api/SysUser/ResetPwd', method: 'POST', body: () => makeResp(null) },
+  { url: '/api/SysUser/UpdatePwd', method: 'POST', body: () => makeResp(null) },
 ])

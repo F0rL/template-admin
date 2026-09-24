@@ -111,3 +111,39 @@
   min-height: 0;
   overflow-y: auto !important;
 }
+
+/* =============================================
+ * 页面切换动画（React <ViewTransition> + 原生 View Transition API）
+ * ---------------------------------------------
+ * DefaultLayout 内容区以 <ViewTransition default="page-fade"> 包裹：
+ * 视图过渡激活时 React 将 page-fade 类挂到对应伪元素，由下列规则播放动画；
+ * 不支持该 API 的浏览器由 React 自动跳过动画、直接切换 DOM。
+ * ============================================= */
+::view-transition-old(.page-fade) {
+  animation: page-exit 0.15s ease both;
+}
+
+::view-transition-new(.page-fade) {
+  animation: page-enter 0.2s cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+
+@keyframes page-enter {
+  from {
+    opacity: 0;
+    transform: translateY(6px) scale(0.98);
+  }
+}
+
+@keyframes page-exit {
+  to {
+    opacity: 0;
+  }
+}
+
+/* 遵循系统「减少动态效果」偏好（React 官方建议显式处理） */
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-old(.page-fade),
+  ::view-transition-new(.page-fade) {
+    animation: none;
+  }
+}
